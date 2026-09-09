@@ -1701,7 +1701,6 @@
         let currentWorkOrderId = null;
         let currentMonitorTab = 'inprogress';
         let returnToMonitorAfterWorkOrder = false;
-        let currentOpenModalId = null;
 
         // ─── UTILITY FUNCTIONS ───
         function getLocalDateString(date) {
@@ -2574,6 +2573,8 @@
         }
 
         // ─── MODAL HELPERS ───
+        let currentOpenModalId = null;
+
         function openModal(id) {
             const modal = document.getElementById(id);
             if (!modal) return;
@@ -5332,6 +5333,40 @@
                 }
             });
         }
+
+        // ─── KEYBOARD SHORTCUTS ───
+        document.addEventListener('keydown', function(e) {
+            const isInputFocused = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName);
+            if (isInputFocused && e.key !== 'Escape') return;
+
+            if ((e.altKey) && ['n', 'm', 'f'].includes(e.key.toLowerCase())) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            if (e.altKey) {
+                switch (e.key.toLowerCase()) {
+                    case 'n':
+                        openOrderModal();
+                        break;
+                    case 'm':
+                        openMonitorModal();
+                        break;
+                    case 'f':
+                        const searchInput = document.getElementById('filter-search');
+                        if (searchInput) searchInput.focus();
+                        break;
+                    default:
+                        break;
+                }
+                return;
+            }
+
+            if (e.key === 'Escape' && currentOpenModalId) {
+                e.preventDefault();
+                closeModal(currentOpenModalId);
+            }
+        });
 
         // ─── MODAL OVERLAY CLOSE ───
         document.querySelectorAll('.modal-overlay').forEach(modal => {
