@@ -1,6 +1,6 @@
 # 🚚 Vehicle Dispatch Tracker
 
-A browser-based Single Page Application (SPA) for managing and tracking vehicle dispatch orders, built with vanilla HTML/CSS/JS and sql.js.
+A browser-based Single Page Application (SPA) for managing and tracking vehicle dispatch orders. Built with vanilla HTML/CSS/JS and sql.js — no server, no build process, no database installation required.
 
 ![Status](https://img.shields.io/badge/status-active-success)
 ![License](https://img.shields.io/badge/license-MIT-blue)
@@ -9,7 +9,7 @@ A browser-based Single Page Application (SPA) for managing and tracking vehicle 
 
 ## 📋 Overview
 
-Track, manage, and optimize fleet dispatch operations from a single HTML file. All data is stored locally in your browser using SQLite (via sql.js) and synchronized to IndexedDB for persistence. No server, no build process, no database installation required.
+Track, manage, and optimize fleet dispatch operations from a single HTML file. All data is stored locally in your browser using SQLite (via sql.js) and synchronized to IndexedDB for persistence.
 
 ---
 
@@ -19,7 +19,8 @@ Track, manage, and optimize fleet dispatch operations from a single HTML file. A
 - **Single & Bulk Entry** — Add orders one-by-one or via the grid-based multiple entry form
 - **Full CRUD** — Create, read, update, and delete orders with automatic audit logging
 - **Duplicate Detection** — Warns on duplicate ERP-style order numbers
-- **Soft Validation** — Required field checks and date logic (ETA must be ≥ dispatch date)
+- **Field Validation** — Required field checks and date logic (ETA must be ≥ dispatch date)
+- **City Autocomplete** — Saudi cities autocomplete for Destination From / Destination To fields
 
 ### 🗺️ Route Mapping
 - **Leaflet Integration** — Visualize order routes on an interactive map
@@ -30,6 +31,7 @@ Track, manage, and optimize fleet dispatch operations from a single HTML file. A
   - 🎨 CartoDB Voyager (with API key)
 - **OSRM Routing** — Road-based route calculation and distance measurement
 - **Reverse Geocoding** — Auto-fill location names from coordinates via Geoapify
+- **Map Style Selector** — Switch map styles directly from the map view
 
 ### 📊 Analytics & Reports
 - **Status Distribution** — Doughnut chart with count/percentage labels
@@ -45,7 +47,7 @@ Track, manage, and optimize fleet dispatch operations from a single HTML file. A
 - **JSON/SQL Backup** — Full database export and restore
 
 ### ⚡ Productivity
-- **Keyboard Shortcuts** — `Ctrl+N` (new order), `Ctrl+M` (monitor), `Ctrl+F` (search), `Esc` (close modal)
+- **Keyboard Shortcuts** — `Alt+N` (new order), `Alt+M` (monitor), `Alt+F` (search), `Esc` (close modal)
 - **Filter Presets** — Save and reuse common filter combinations
 - **Undo Actions** — Undo last delete/update with 8-second toast window
 - **Column Customization** — Rename columns and toggle visibility
@@ -93,16 +95,16 @@ git clone https://github.com/bernando-minguita/Vehicle-Dispatch-Tracker.git
 ```
 
 2. Open `index.html` in your browser:
-   ```bash
-   # Windows
-   start index.html
+```bash
+# Windows
+start index.html
 
-   # macOS
-   open index.html
+# macOS
+open index.html
 
-   # Linux
-   xdg-open index.html
-   ```
+# Linux
+xdg-open index.html
+```
 
 That's it. The app initializes with sample data on first load.
 
@@ -111,7 +113,7 @@ That's it. The app initializes with sample data on first load.
 ## 📖 Usage
 
 ### Adding Orders
-- **Single Order**: Click **Add Order** or press `Ctrl+N`
+- **Single Order**: Click **Add Order** or press `Alt+N`
 - **Multiple Orders**: Click the dropdown next to **Add Order** → **Add Multiple Orders**
 - Fill in required fields (marked with `*`). The app validates dates and required fields before saving.
 
@@ -164,9 +166,9 @@ Settings are saved to `localStorage` and persist across sessions.
 
 | Shortcut | Action |
 |----------|--------|
-| `Ctrl + N` | Open new order modal |
-| `Ctrl + M` | Open monitor modal |
-| `Ctrl + F` | Focus search input |
+| `Alt + N` | Open new order modal |
+| `Alt + M` | Open monitor modal |
+| `Alt + F` | Focus search input |
 | `Esc` | Close topmost modal |
 
 *Shortcuts are suppressed when typing in text fields.*
