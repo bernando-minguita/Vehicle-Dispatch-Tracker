@@ -767,8 +767,8 @@
                         <th class="p-3 border-b cursor-pointer select-none" onclick="sortTable('head_number')" id="th-head_number" style="border-color:#D9E2EC;" title="Double click to rename" ondblclick="openColumnRenameModal('head_number')">HEAD NO <span class="sort-indicator"></span></th>
                         <th class="p-3 border-b cursor-pointer select-none" onclick="sortTable('attachment_number')" id="th-attachment_number" style="border-color:#D9E2EC;" title="Double click to rename" ondblclick="openColumnRenameModal('attachment_number')">ATTACH NO <span class="sort-indicator"></span></th>
                         <th class="p-3 border-b cursor-pointer select-none" onclick="sortTable('driver_name')" id="th-driver_name" style="border-color:#D9E2EC;" title="Double click to rename" ondblclick="openColumnRenameModal('driver_name')">DRIVER NAME <span class="sort-indicator"></span></th>
-                        <th class="p-3 border-b cursor-pointer select-none" onclick="sortTable('badge_number')" id="th-badge_number" style="border-color:#D9E2EC;" title="Double click to rename" ondblclick="openColumnRenameModal('badge_number')">DRIVER BADGE <span class="sort-indicator"></span></th>
-                        <th class="p-3 border-b cursor-pointer select-none" onclick="sortTable('mobile')" id="th-mobile" style="border-color:#D9E2EC;" title="Double click to rename" ondblclick="openColumnRenameModal('mobile')">MOBILE <span class="sort-indicator"></span></th>
+                         <th class="p-3 border-b cursor-pointer select-none" onclick="sortTable('badge_number')" id="th-badge_number" style="border-color:#D9E2EC;" title="Double click to rename" ondblclick="openColumnRenameModal('badge_number')">BADGE NUMBER <span class="sort-indicator"></span></th>
+                         <th class="p-3 border-b cursor-pointer select-none" onclick="sortTable('mobile')" id="th-mobile" style="border-color:#D9E2EC;" title="Double click to rename" ondblclick="openColumnRenameModal('mobile')">MOBILE NUMBER <span class="sort-indicator"></span></th>
                         <th class="p-3 border-b cursor-pointer select-none" onclick="sortTable('actual_departure_date')" id="th-actual_departure_date" style="border-color:#D9E2EC;" title="Double click to rename" ondblclick="openColumnRenameModal('actual_departure_date')">DISPATCH DATE <span class="sort-indicator"></span></th>
                         <th class="p-3 border-b cursor-pointer select-none" onclick="sortTable('departure_time')" id="th-departure_time" style="border-color:#D9E2EC;" title="Double click to rename" ondblclick="openColumnRenameModal('departure_time')">DEPARTURE TIME <span class="sort-indicator"></span></th>
                         <th class="p-3 border-b cursor-pointer select-none" onclick="sortTable('customer_name')" id="th-customer_name" style="border-color:#D9E2EC;" title="Double click to rename" ondblclick="openColumnRenameModal('customer_name')">CUSTOMER <span class="sort-indicator"></span></th>
@@ -1205,8 +1205,8 @@
                         <div><label class="block text-sm font-semibold mb-1" style="color:#627D98;">Actual Departure Date</label><input type="date" id="actual_departure_date" class="w-full border rounded p-2 focus:border-primary focus:outline-none" style="border-color:#D9E2EC; color:#243B53;" /></div>
                         <div><label class="block text-sm font-semibold mb-1" style="color:#627D98;">Departure Time</label><input type="time" id="departure_time" class="w-full border rounded p-2 focus:border-primary focus:outline-none" style="border-color:#D9E2EC; color:#243B53;" /></div>
                         <div><label class="block text-sm font-semibold mb-1" style="color:#627D98;">Customer Name *</label><input type="text" id="customer_name" required class="w-full border rounded p-2 focus:border-primary focus:outline-none" style="border-color:#D9E2EC; color:#243B53;" /></div>
-                        <div><label class="block text-sm font-semibold mb-1" style="color:#627D98;">Destination From</label><input type="text" id="destination_from" list="saudi-cities-list" class="w-full border rounded p-2 focus:border-primary focus:outline-none" style="border-color:#D9E2EC; color:#243B53;" /></div>
-                        <div><label class="block text-sm font-semibold mb-1" style="color:#627D98;">Destination To</label><input type="text" id="destination_to" list="saudi-cities-list" class="w-full border rounded p-2 focus:border-primary focus:outline-none" style="border-color:#D9E2EC; color:#243B53;" /></div>
+                        <div><label class="block text-sm font-semibold mb-1" style="color:#627D98;">Origin / Pick-up Location / Shipper</label><input type="text" id="destination_from" class="w-full border rounded p-2 focus:border-primary focus:outline-none" style="border-color:#D9E2EC; color:#243B53;" /></div>
+                        <div><label class="block text-sm font-semibold mb-1" style="color:#627D98;">Destination / Delivery Location / Consignee</label><input type="text" id="destination_to" class="w-full border rounded p-2 focus:border-primary focus:outline-none" style="border-color:#D9E2EC; color:#243B53;" /></div>
                         <div><label class="block text-sm font-semibold mb-1" style="color:#627D98;">Coordinates (Latitude, Longitude)</label><input type="text" id="coordinates" placeholder="e.g. 26.42, 50.10" class="w-full border rounded p-2 focus:border-primary focus:outline-none" style="border-color:#D9E2EC; color:#243B53;" /></div>
                         <div>
                             <label class="block text-sm font-semibold mb-1" style="color:#627D98;">Payload/Cargo Type</label>
@@ -1303,18 +1303,18 @@
                         <thead>
                             <tr style="background:#F1F5F8; color:#627D98;">
                                 <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Order No *</th>
-                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Branch *</th>
-                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Head No</th>
-                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Attach No</th>
-                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Driver *</th>
-                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Badge</th>
-                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Mobile</th>
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Branch Name *</th>
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Head Number</th>
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Attach. Number</th>
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Driver Name*</th>
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Badge Number</th>
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Mobile Number</th>
                                 <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Dispatch Date</th>
-                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Departure</th>
-                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Customer *</th>
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Departure Date</th>
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Customer Name *</th>
                                 <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Customer ETA</th>
-                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Loading Pt</th>
-                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Offloading Pt</th>
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Loading Point</th>
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Offloading Point</th>
                                 <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Coordinates</th>
                                 <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Payload Type</th>
                                 <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Report Terminal</th>
@@ -1322,10 +1322,10 @@
                                 <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">POD/DN/BOL</th>
                                 <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Expected Offload Date</th>
                                 <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Offload Time</th>
-                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Status *</th>
-                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Delay</th>
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Shipment Status *</th>
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Is Delay</th>
                                 <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Reason for Delay</th>
-                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Remarks</th>
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Notes / Remarks</th>
                             </tr>
                         </thead>
                         <tbody id="multiple-orders-body">
@@ -1347,8 +1347,8 @@
                                 <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="time" class="mo-departure_time w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
                                 <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-customer_name w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" placeholder="Required" /></td>
                                 <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="date" class="mo-customer_eta w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
-                                <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-destination_from w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" list="saudi-cities-list" /></td>
-                                <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-destination_to w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" list="saudi-cities-list" /></td>
+                                <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-destination_from w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
+                                <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-destination_to w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
                                 <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-coordinates w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" placeholder="Lat, Lng" /></td>
                                 <td class="p-2 border-b" style="border-color:#D9E2EC;">
                                     <select class="mo-payload_type w-full border rounded p-1.5 text-sm bg-white" style="border-color:#D9E2EC; color:#243B53;">
@@ -2351,8 +2351,8 @@
             head_number: 'HEAD NO',
             attachment_number: 'ATTACH NO',
             driver_name: 'DRIVER NAME',
-            badge_number: 'DRIVER BADGE',
-            mobile: 'MOBILE',
+            badge_number: 'BADGE NUMBER',
+            mobile: 'MOBILE NUMBER',
             actual_departure_date: 'DISPATCH DATE',
             departure_time: 'DEPARTURE TIME',
             customer_name: 'CUSTOMER',
@@ -5343,95 +5343,6 @@
                 }
             });
         });
-    </script>
-    <datalist id="saudi-cities-list">
-        <option value="Abha">
-        <option value="Abqaiq">
-        <option value="Abu Arish">
-        <option value="Al Bahah">
-        <option value="Al Hofuf">
-        <option value="Al Kharj">
-        <option value="Al Khafji">
-        <option value="Al Khobar">
-        <option value="Al Majma'ah">
-        <option value="Al Mubarraz">
-        <option value="Al Qunfudhah">
-        <option value="Al Qurayyat">
-        <option value="Al Ula">
-        <option value="Ar Rass">
-        <option value="Arar">
-        <option value="Az Zulfi">
-        <option value="Bisha">
-        <option value="Buraydah">
-        <option value="Dammam">
-        <option value="Dawadmi">
-        <option value="Dhahran">
-        <option value="Duba">
-        <option value="Hafr Al-Batin">
-        <option value="Hail">
-        <option value="Jazan">
-        <option value="Jeddah">
-        <option value="Jubail">
-        <option value="Khamis Mushait">
-        <option value="Madinah">
-        <option value="Makkah">
-        <option value="Najran">
-        <option value="Qatif">
-        <option value="Rabigh">
-        <option value="Ras Tanura">
-        <option value="Riyadh">
-        <option value="Sabya">
-        <option value="Sakaka">
-        <option value="Samtah">
-        <option value="Tabuk">
-        <option value="Taif">
-        <option value="Umluj">
-        <option value="Unaizah">
-        <option value="Wadi Al-Dawasir">
-        <option value="Yanbu">
-    </datalist>
-    <script>
-        (function() {
-            window.addEventListener('keydown', function(e) {
-                const isInputFocused = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName);
-                if (isInputFocused && e.key !== 'Escape') return;
-
-                if (e.altKey) {
-                    const key = e.key.toLowerCase();
-                    if (key === 'n' || key === 'm' || key === 'f') {
-                        e.preventDefault();
-                        e.stopPropagation();
-                    }
-
-                    switch (key) {
-                        case 'n':
-                            try { if (typeof openOrderModal === 'function') openOrderModal(); } catch (err) { console.error(err); }
-                            break;
-                        case 'm':
-                            try { if (typeof openMonitorModal === 'function') openMonitorModal(); } catch (err) { console.error(err); }
-                            break;
-                        case 'f':
-                            try {
-                                const searchInput = document.getElementById('filter-search');
-                                if (searchInput) searchInput.focus();
-                            } catch (err) { console.error(err); }
-                            break;
-                        default:
-                            break;
-                    }
-                    return;
-                }
-
-                if (e.key === 'Escape') {
-                    const modal = document.querySelector('.modal-overlay.show:not(.hidden)');
-                    if (modal) {
-                        e.preventDefault();
-                        modal.classList.add('hidden');
-                        modal.classList.remove('show');
-                    }
-                }
-            }, true);
-        })();
     </script>
 </body>
 </html>
