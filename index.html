@@ -518,10 +518,39 @@
             background: #fff;
             padding: 1px 0;
         }
+
+        /* ── Lock Screen ── */
+        #lock-screen {
+            backdrop-filter: blur(4px);
+        }
     </style>
 </head>
 
 <body class="h-screen flex flex-col text-gray-800">
+
+    <!-- Lock Screen -->
+    <div id="lock-screen" class="fixed inset-0 z-[200] hidden" style="background:#243B53;">
+        <div class="flex items-center justify-center flex-col h-full w-full px-4">
+            <div class="w-full max-w-sm">
+                <div class="text-center mb-6">
+                    <i class="fas fa-lock text-5xl mb-4" style="color:#829AB1;"></i>
+                    <h2 class="text-2xl font-bold text-white mb-1">Application Locked</h2>
+                    <p class="text-sm" style="color:#829AB1;">Enter password to continue</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-xl p-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold mb-1" style="color:#627D98;">Password</label>
+                            <input type="password" id="lock-password" class="w-full border rounded p-3 text-sm focus:border-primary focus:outline-none" style="border-color:#D9E2EC; color:#243B53;" placeholder="Enter password" onkeydown="if(event.key==='Enter') unlockApp()" />
+                            <p id="lock-error" class="text-xs mt-1 hidden" style="color:#B85450;"></p>
+                        </div>
+                        <button onclick="unlockApp()" class="w-full py-2.5 rounded text-sm font-semibold shadow btn-primary">Unlock</button>
+                    </div>
+                </div>
+                <p class="text-xs text-center mt-4" style="color:#829AB1;">Session locked due to inactivity</p>
+            </div>
+        </div>
+    </div>
 
     <!-- Loading Overlay -->
     <div id="loading-overlay" class="flex items-center justify-center flex-col">
@@ -572,9 +601,21 @@
                 <i class="fas fa-address-book text-sm"></i>
                 <span class="hidden md:inline">Address Book</span>
             </button>
+            <button onclick="openFleetModal()" class="px-3 py-2 rounded transition font-semibold text-sm shadow flex items-center gap-1.5" style="background:#4F6D8A; color:#fff;" onmouseover="this.style.background='#3F5F7A'" onmouseout="this.style.background='#4F6D8A'" title="Fleet">
+                <i class="fas fa-truck text-sm"></i>
+                <span class="hidden md:inline">Fleet</span>
+            </button>
+            <button onclick="manualLockApp()" id="btn-lock-app" class="px-3 py-2 rounded transition font-semibold text-sm shadow flex items-center gap-1.5 hidden" style="background:#B7791F; color:#fff;" onmouseover="this.style.background='#9A6417'" onmouseout="this.style.background='#B7791F'" title="Lock application">
+                <i class="fas fa-lock text-sm"></i>
+                <span class="hidden md:inline">Lock</span>
+            </button>
             <button onclick="openSettingsModal()" class="px-3 py-2 rounded transition font-semibold text-sm shadow flex items-center gap-1.5" style="background:#627D98; color:#fff;" onmouseover="this.style.background='#4F6D8A'" onmouseout="this.style.background='#627D98'" title="System Settings">
                 <i class="fas fa-cog text-sm"></i>
                 <span class="hidden md:inline">Settings</span>
+            </button>
+            <button onclick="openAboutModal()" class="px-3 py-2 rounded transition font-semibold text-sm shadow flex items-center gap-1.5" style="background:#627D98; color:#fff;" onmouseover="this.style.background='#4F6D8A'" onmouseout="this.style.background='#627D98'" title="About">
+                <i class="fas fa-info-circle text-sm"></i>
+                <span class="hidden md:inline">Info</span>
             </button>
         </div>
     </header>
@@ -897,6 +938,17 @@
             </div>
             <div class="p-6 flex-1 overflow-y-auto relative">
                 <div id="map" class="relative rounded border" style="border-color:#D9E2EC; min-height:500px;">
+                    <div id="map-api-warning" class="absolute inset-0 z-[1001] hidden items-center justify-center" style="background:rgba(255,255,255,0.92);">
+                        <div class="text-center p-6 max-w-sm">
+                            <i class="fas fa-exclamation-triangle text-4xl mb-3" style="color:#B7791F;"></i>
+                            <h3 class="text-lg font-bold mb-2" style="color:#243B53;">API Key Required</h3>
+                            <p class="text-sm mb-4" style="color:#627D98;">CARTO API key is required for this map style. Please add it in Settings, or choose a different map style below.</p>
+                            <div class="flex flex-col gap-2">
+                                <button onclick="closeModal('modal-map-view'); openSettingsModal();" class="px-4 py-2 rounded text-sm font-semibold shadow" style="background:#4F6D8A; color:#fff;" onmouseover="this.style.background='#3F5F7A'" onmouseout="this.style.background='#4F6D8A'">Open Settings</button>
+                                <button onclick="dismissMapWarning()" class="px-4 py-2 border rounded text-sm font-semibold btn-secondary">Choose Different Style</button>
+                            </div>
+                        </div>
+                    </div>
                     <div class="absolute bottom-3 left-3 z-[1000]">
                         <select id="map-style-select" onchange="applyMapStyle(this.value)" class="text-xs border rounded shadow px-2 py-1 bg-white" style="border-color:#D9E2EC; color:#243B53;">
                             <option value="osm">OpenStreetMap</option>
@@ -1073,7 +1125,7 @@
     </div>
 
     <!-- Settings -->
-    <div id="modal-settings" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center">
+    <div id="modal-settings" class="fixed inset-0 modal-overlay hidden z-[110] flex items-center justify-center">
         <div class="bg-white rounded-lg shadow-xl w-11/12 max-w-lg max-h-[90vh] flex flex-col">
             <div class="px-6 py-4 border-b flex justify-between items-center rounded-t-lg" style="background:#F6F8FA; border-color:#D9E2EC;">
                 <h3 class="text-xl font-bold" style="color:#243B53;"><i class="fas fa-cog mr-2" style="color:#334E68;"></i> System Settings</h3>
@@ -1106,6 +1158,28 @@
                         </div>
                     </div>
                     <div class="pt-4 border-t" style="border-color:#D9E2EC;">
+                        <h4 class="font-bold text-sm mb-2" style="color:#627D98;"><i class="fas fa-lock mr-1" style="color:#334E68;"></i> Lock Screen</h4>
+                        <div class="space-y-2">
+                            <div>
+                                <label class="block text-sm font-semibold mb-1" style="color:#627D98;">Lock Password</label>
+                                <input type="password" id="setting-lock-password" placeholder="Set password to enable lock screen" class="w-full border rounded p-2 text-sm focus:border-primary focus:outline-none" style="border-color:#D9E2EC; color:#243B53;" />
+                                <p class="text-xs mt-1" style="color:#829AB1;">Leave blank to disable lock screen. Password is stored locally and hashed.</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-1" style="color:#627D98;">Auto-Lock After</label>
+                                <select id="setting-lock-timeout" class="w-full border rounded p-2 text-sm focus:border-primary focus:outline-none bg-white" style="border-color:#D9E2EC; color:#243B53;">
+                                    <option value="1">1 minute</option>
+                                    <option value="3">3 minutes</option>
+                                    <option value="5" selected>5 minutes</option>
+                                    <option value="10">10 minutes</option>
+                                    <option value="15">15 minutes</option>
+                                    <option value="30">30 minutes</option>
+                                    <option value="0">Never</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pt-4 border-t" style="border-color:#D9E2EC;">
                         <h4 class="font-bold text-sm mb-2" style="color:#627D98;"><i class="fas fa-map mr-1" style="color:#334E68;"></i> Map Settings</h4>
                         <div class="space-y-2">
                             <div>
@@ -1129,6 +1203,24 @@
                     <button onclick="closeModal('modal-settings')" class="px-3 py-2 border rounded text-sm font-semibold btn-secondary">Cancel</button>
                     <button onclick="saveSettings()" class="px-3 py-2 rounded text-sm font-semibold shadow btn-primary">Save Settings</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Modal -->
+    <div id="modal-about" class="fixed inset-0 modal-overlay hidden z-[70] flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <div class="px-6 py-4 border-b flex justify-between items-center rounded-t-lg" style="background:#F6F8FA; border-color:#D9E2EC;">
+                <h3 class="text-xl font-bold" style="color:#243B53;"><i class="fas fa-info-circle mr-2" style="color:#334E68;"></i> About Vehicle Dispatch Tracker</h3>
+                <button onclick="closeModal('modal-about')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1">
+                <p class="text-sm mb-4" style="color:#627D98;">Transport order and fleet management application for logistics operations across Dammam, Riyadh, and Jeddah. Supports single and bulk order entry, fleet and address book registries, route mapping with Leaflet, order tracking with status history records, monitoring dashboards with charts, print and PDF reports, JSON/CSV/Excel export, audit logging, and password lock — all with offline persistence using SQLite via sql.js and IndexedDB.</p>
+                <p class="text-sm mb-4" style="color:#627D98;">External resources integrated: <strong>Leaflet</strong> for maps, <strong>CARTO</strong> and <strong>Esri</strong> tile layers, <strong>Geoapify</strong> for geocoding and routing, and <strong>sql.js</strong> for local SQLite database operations.</p>
+                <p class="text-sm" style="color:#627D98;">Created by <a href="https://www.linkedin.com/in/bernando-jr-minguita" target="_blank" rel="noopener noreferrer" class="font-semibold" style="color:#4F6D8A;">Bernando Jr Minguita</a></p>
+            </div>
+            <div class="px-6 py-4 border-t flex justify-end rounded-b-lg" style="background:#F6F8FA; border-color:#D9E2EC;">
+                <button onclick="closeModal('modal-about')" class="px-4 py-2 border rounded text-sm font-semibold btn-secondary">Close</button>
             </div>
         </div>
     </div>
@@ -1275,11 +1367,11 @@
                 <h3 class="text-lg font-bold" style="color:#243B53;">Confirm Delete</h3>
             </div>
             <div class="p-6">
-                <p class="text-sm mb-4" style="color:#627D98;">Delete this address book entry? This will not affect existing orders.</p>
+                <p id="confirm-delete-message" class="text-sm mb-4" style="color:#627D98;">Delete this entry? This will not affect existing orders.</p>
             </div>
             <div class="px-6 py-4 border-t flex justify-end gap-3 rounded-b-lg" style="background:#F6F8FA; border-color:#D9E2EC;">
                 <button onclick="closeModal('modal-confirm-delete')" class="px-4 py-2 border rounded text-sm font-semibold btn-secondary">Cancel</button>
-                <button onclick="confirmDeleteAddressBookEntry()" class="px-4 py-2 rounded text-sm font-semibold shadow" style="background:#B85450; color:#fff;" onmouseover="this.style.background='#994C48'" onmouseout="this.style.background='#B85450'">Delete</button>
+                <button onclick="confirmDeleteEntry()" class="px-4 py-2 rounded text-sm font-semibold shadow" style="background:#B85450; color:#fff;" onmouseover="this.style.background='#994C48'" onmouseout="this.style.background='#B85450'">Delete</button>
             </div>
         </div>
     </div>
@@ -1327,6 +1419,72 @@
         </div>
     </div>
     <input type="file" id="ab-csv-input" accept=".csv" onchange="handleAddressBookCSVImport(event)" class="hidden" />
+
+    <!-- Fleet CSV Import Preview Modal -->
+    <div id="modal-fleet-csv-preview" class="fixed inset-0 modal-overlay hidden z-[95] flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl w-11/12 max-w-5xl max-h-[90vh] flex flex-col">
+            <div class="px-6 py-4 border-b flex justify-between items-center rounded-t-lg" style="background:#F6F8FA; border-color:#D9E2EC;">
+                <h3 class="text-xl font-bold" style="color:#243B53;"><i class="fas fa-file-csv mr-2" style="color:#334E68;"></i> Preview Fleet CSV Import</h3>
+                <button onclick="closeModal('modal-fleet-csv-preview')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1">
+                <p class="text-sm mb-4" style="color:#627D98;">Review the data below before importing. Duplicate unit IDs will be updated. Click <strong>Import</strong> to confirm.</p>
+                <div class="overflow-x-auto border rounded" style="border-color:#D9E2EC;">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr style="background:#F1F5F8; color:#627D98;">
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Unit ID</th>
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Type</th>
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Description</th>
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Branch</th>
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fleet-csv-preview-body">
+                        </tbody>
+                    </table>
+                </div>
+                <input type="hidden" id="fleet-csv-pending-data" />
+            </div>
+            <div class="px-6 py-4 border-t flex justify-end gap-3 rounded-b-lg" style="background:#F6F8FA; border-color:#D9E2EC;">
+                <button onclick="closeModal('modal-fleet-csv-preview')" class="px-4 py-2 border rounded text-sm font-semibold btn-secondary">Cancel</button>
+                <button onclick="openModal('modal-fleet-csv-confirm')" class="px-4 py-2 rounded text-sm font-semibold shadow" style="background:#4F8060; color:#fff;" onmouseover="this.style.background='#3F6F51'" onmouseout="this.style.background='#4F8060'"><i class="fas fa-check mr-1"></i> Import</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fleet CSV Import Confirmation Modal -->
+    <div id="modal-fleet-csv-confirm" class="fixed inset-0 modal-overlay hidden z-[100] flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div class="px-6 py-4 border-b" style="border-color:#D9E2EC;">
+                <h3 class="text-lg font-bold" style="color:#243B53;">Confirm Fleet Import</h3>
+            </div>
+            <div class="p-6">
+                <p class="text-sm mb-4" style="color:#627D98;">Are you sure you want to import these units into the fleet? Duplicate unit IDs will be updated.</p>
+                <p id="fleet-csv-summary" class="text-xs font-semibold" style="color:#4F6D8A;"></p>
+            </div>
+            <div class="px-6 py-4 border-t flex justify-end gap-3 rounded-b-lg" style="background:#F6F8FA; border-color:#D9E2EC;">
+                <button onclick="closeModal('modal-fleet-csv-confirm')" class="px-4 py-2 border rounded text-sm font-semibold btn-secondary">Cancel</button>
+                <button onclick="confirmFleetCSVImport()" class="px-4 py-2 rounded text-sm font-semibold shadow" style="background:#4F8060; color:#fff;" onmouseover="this.style.background='#3F6F51'" onmouseout="this.style.background='#4F8060'">Yes, Import</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Fleet Entry Modal -->
+    <div id="modal-confirm-fleet-entry" class="fixed inset-0 modal-overlay hidden z-[95] flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div class="px-6 py-4 border-b" style="border-color:#D9E2EC;">
+                <h3 class="text-lg font-bold" style="color:#243B53;">Confirm Fleet Entry</h3>
+            </div>
+            <div class="p-6">
+                <p id="fleet-confirm-message" class="text-sm mb-4" style="color:#627D98;">Are you sure you want to save this fleet unit?</p>
+            </div>
+            <div class="px-6 py-4 border-t flex justify-end gap-3 rounded-b-lg" style="background:#F6F8FA; border-color:#D9E2EC;">
+                <button onclick="closeModal('modal-confirm-fleet-entry')" class="px-4 py-2 border rounded text-sm font-semibold btn-secondary">Cancel</button>
+                <button onclick="executeSaveFleetEntry()" class="px-4 py-2 rounded text-sm font-semibold shadow" style="background:#4F8060; color:#fff;" onmouseover="this.style.background='#3F6F51'" onmouseout="this.style.background='#4F8060'">Save</button>
+            </div>
+        </div>
+    </div>
 
      <!-- Address Book Entry Modal -->
     <div id="modal-address-book-entry" class="fixed inset-0 modal-overlay hidden z-[90] flex items-center justify-center">
@@ -1434,6 +1592,135 @@
         </div>
     </div>
 
+    <!-- Fleet Entry Modal -->
+    <div id="modal-fleet-entry" class="fixed inset-0 modal-overlay hidden z-[90] flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl w-11/12 max-w-2xl max-h-[90vh] flex flex-col">
+            <div class="px-6 py-4 border-b flex justify-between items-center rounded-t-lg" style="background:#F6F8FA; border-color:#D9E2EC;">
+                <h3 class="text-xl font-bold" style="color:#243B53;"><i class="fas fa-truck mr-2" style="color:#334E68;"></i> <span id="fleet-entry-modal-title">Add Fleet Unit</span></h3>
+                <button onclick="closeModal('modal-fleet-entry')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="hidden" id="fleet-entry-id" />
+                    <div>
+                        <label class="block text-sm font-semibold mb-1" style="color:#627D98;">Unit ID *</label>
+                        <input type="text" id="fleet-entry-unit-id" placeholder="e.g. H-1042, ET-3091, CT-4012, B-1701" class="w-full border rounded p-2 text-sm focus:border-primary focus:outline-none" style="border-color:#D9E2EC; color:#243B53;" />
+                        <p class="text-xs mt-1" style="color:#829AB1;">Use prefix: H- (head), ET- (extendable trailer), CT- (curtain trailer), B- (bulker)</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1" style="color:#627D98;">Type *</label>
+                        <select id="fleet-entry-type" class="w-full border rounded p-2 text-sm bg-white focus:border-primary focus:outline-none" style="border-color:#D9E2EC; color:#243B53;">
+                            <option value="head">Head</option>
+                            <option value="attachment">Attachment</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1" style="color:#627D98;">Description *</label>
+                        <input type="text" id="fleet-entry-description" placeholder="e.g. Tractor Head, Extendable Trailer, Curtain Trailer, Bulker" class="w-full border rounded p-2 text-sm focus:border-primary focus:outline-none" style="border-color:#D9E2EC; color:#243B53;" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1" style="color:#627D98;">Branch *</label>
+                        <select id="fleet-entry-branch" class="w-full border rounded p-2 text-sm bg-white focus:border-primary focus:outline-none" style="border-color:#D9E2EC; color:#243B53;">
+                            <option value="Dammam">Dammam</option>
+                            <option value="Riyadh">Riyadh</option>
+                            <option value="Jeddah">Jeddah</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t flex justify-end gap-3 rounded-b-lg" style="background:#F6F8FA; border-color:#D9E2EC;">
+                <button onclick="saveFleetEntry()" class="px-4 py-2 rounded text-sm font-semibold shadow" style="background:#4F8060; color:#fff;" onmouseover="this.style.background='#3F6F51'" onmouseout="this.style.background='#4F8060'"><i class="fas fa-save mr-1"></i> Save</button>
+                <button onclick="closeModal('modal-fleet-entry')" class="px-4 py-2 border rounded text-sm font-semibold btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fleet Modal -->
+    <div id="modal-fleet" class="fixed inset-0 modal-overlay hidden z-[80] flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl w-11/12 max-w-6xl max-h-[90vh] flex flex-col">
+            <div class="px-6 py-4 border-b flex justify-between items-center rounded-t-lg" style="background:#F6F8FA; border-color:#D9E2EC;">
+                <h3 class="text-xl font-bold" style="color:#243B53;"><i class="fas fa-truck mr-2" style="color:#334E68;"></i> Fleet</h3>
+                <div class="flex items-center gap-2">
+                    <button onclick="openModal('modal-fleet-csv-actions')" class="px-3 py-2 rounded text-xs font-semibold border" style="border-color:#D9E2EC; color:#334E68;" onmouseover="this.style.background='#F1F5F8'" onmouseout="this.style.background=''"><i class="fas fa-file-csv mr-1"></i> CSV</button>
+                    <button onclick="openFleetEntryModal()" class="px-3 py-2 rounded text-xs font-semibold shadow" style="background:#4F8060; color:#fff;" onmouseover="this.style.background='#3F6F51'" onmouseout="this.style.background='#4F8060'"><i class="fas fa-plus mr-1"></i> Add Unit</button>
+                    <button onclick="fleetTarget=null; closeModal('modal-fleet')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+                </div>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1">
+                <div class="flex flex-col md:flex-row gap-3 mb-4">
+                    <div class="relative flex-1">
+                        <i class="fas fa-search absolute left-3 top-2.5" style="color:#829AB1;"></i>
+                        <input type="text" id="fleet-search" placeholder="Search by unit id or description…" class="w-full pl-9 pr-8 py-1.5 border rounded text-sm focus:outline-none focus:border-primary" style="border-color:#D9E2EC; color:#243B53; background:#FFFFFF;" oninput="renderFleetTable()" />
+                        <button onclick="document.getElementById('fleet-search').value=''; renderFleetTable();" class="absolute right-2 top-2 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs font-semibold" style="color:#627D98;">Type:</label>
+                        <select id="fleet-filter-type" onchange="renderFleetTable()" class="text-xs border rounded p-1.5 bg-white" style="border-color:#D9E2EC; color:#243B53;">
+                            <option value="all">All</option>
+                            <option value="head">Heads</option>
+                            <option value="attachment">Attachments</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs font-semibold" style="color:#627D98;">Branch:</label>
+                        <select id="fleet-filter-branch" onchange="renderFleetTable()" class="text-xs border rounded p-1.5 bg-white" style="border-color:#D9E2EC; color:#243B53;">
+                            <option value="">All</option>
+                            <option value="Dammam">Dammam</option>
+                            <option value="Riyadh">Riyadh</option>
+                            <option value="Jeddah">Jeddah</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="overflow-x-auto border rounded" style="border-color:#D9E2EC;">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr style="background:#F1F5F8; color:#627D98;">
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Unit ID</th>
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Type</th>
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Description</th>
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Branch</th>
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fleet-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t flex justify-end gap-3 rounded-b-lg" style="background:#F6F8FA; border-color:#D9E2EC;">
+                <button onclick="fleetTarget=null; closeModal('modal-fleet')" class="px-4 py-2 border rounded text-sm font-semibold btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fleet CSV Actions Modal -->
+    <div id="modal-fleet-csv-actions" class="fixed inset-0 modal-overlay hidden z-[95] flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div class="px-6 py-4 border-b" style="border-color:#D9E2EC;">
+                <h3 class="text-lg font-bold" style="color:#243B53;">CSV Actions</h3>
+            </div>
+            <div class="p-6">
+                <p class="text-sm mb-4" style="color:#627D98;">Choose an action for the fleet:</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="closeModal('modal-fleet-csv-actions'); setTimeout(() => document.getElementById('fleet-csv-file-input').click(), 100)" class="flex flex-col items-center gap-2 p-6 border-2 border-dashed rounded-lg hover:border-primary transition" style="border-color:#D9E2EC; color:#334E68;">
+                        <i class="fas fa-file-import text-3xl" style="color:#4F6D8A;"></i>
+                        <span class="font-semibold">Import CSV</span>
+                        <span class="text-xs" style="color:#829AB1;">Add or update units from CSV</span>
+                    </button>
+                    <button onclick="closeModal('modal-fleet-csv-actions'); exportFleetCSV()" class="flex flex-col items-center gap-2 p-6 border-2 border-dashed rounded-lg hover:border-primary transition" style="border-color:#D9E2EC; color:#334E68;">
+                        <i class="fas fa-file-export text-3xl" style="color:#4F8060;"></i>
+                        <span class="font-semibold">Export CSV</span>
+                        <span class="text-xs" style="color:#829AB1;">Download all units as CSV</span>
+                    </button>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t flex justify-end rounded-b-lg" style="background:#F6F8FA; border-color:#D9E2EC;">
+                <button onclick="closeModal('modal-fleet-csv-actions')" class="px-4 py-2 border rounded text-sm font-semibold btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+    <input type="file" id="fleet-csv-file-input" accept=".csv" onchange="handleFleetCSVImport(event)" class="hidden" />
+
     <!-- Add/Edit Order -->
     <div id="modal-order" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center">
         <div class="bg-white rounded-lg shadow-xl w-11/12 max-w-4xl max-h-[90vh] flex flex-col">
@@ -1462,6 +1749,7 @@
                         <div>
                             <label class="block text-xs font-semibold mb-1" style="color:#627D98;">Status *</label>
                             <select id="order_initial_status" required class="w-full border rounded p-1.5 text-sm focus:border-primary focus:outline-none bg-white" style="border-color:#D9E2EC; color:#243B53;">
+                                <option value="">Select</option>
                                 <option value="Pending">Pending</option>
                                 <option value="Dispatched">Dispatched</option>
                                 <option value="In Transit">In Transit</option>
@@ -1479,12 +1767,18 @@
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-xs font-semibold mb-1" style="color:#627D98;">Head Number</label>
-                            <input type="text" id="head_number" class="w-full border rounded p-1.5 text-sm focus:border-primary focus:outline-none" style="border-color:#D9E2EC; color:#243B53;" />
+                            <label class="block text-xs font-semibold mb-1" style="color:#627D98;">Head Number *</label>
+                            <div class="flex items-end gap-2">
+                                <div class="flex-1 field-wrap"><input type="text" id="head_number" required class="w-full border rounded p-1.5 text-sm focus:border-primary focus:outline-none" style="border-color:#D9E2EC; color:#243B53;" /></div>
+                                <button type="button" onclick="fleetTarget={type:'single',field:'head'}; openFleetModal();" class="px-2 py-1.5 rounded text-xs font-semibold shadow flex items-center gap-1 mb-0.5" style="background:#4F6D8A; color:#fff;" onmouseover="this.style.background='#3F5F7A'" onmouseout="this.style.background='#4F6D8A'" title="Select head"><i class="fas fa-truck"></i></button>
+                            </div>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold mb-1" style="color:#627D98;">Attachment Number</label>
-                            <input type="text" id="attachment_number" class="w-full border rounded p-1.5 text-sm focus:border-primary focus:outline-none" style="border-color:#D9E2EC; color:#243B53;" />
+                            <label class="block text-xs font-semibold mb-1" style="color:#627D98;">Attachment Number *</label>
+                            <div class="flex items-end gap-2">
+                                <div class="flex-1 field-wrap"><input type="text" id="attachment_number" required class="w-full border rounded p-1.5 text-sm focus:border-primary focus:outline-none" style="border-color:#D9E2EC; color:#243B53;" /></div>
+                                <button type="button" onclick="fleetTarget={type:'single',field:'attachment'}; openFleetModal();" class="px-2 py-1.5 rounded text-xs font-semibold shadow flex items-center gap-1 mb-0.5" style="background:#4F6D8A; color:#fff;" onmouseover="this.style.background='#3F5F7A'" onmouseout="this.style.background='#4F6D8A'" title="Select attachment"><i class="fas fa-truck"></i></button>
+                            </div>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
@@ -1558,12 +1852,12 @@
                     </div>
                     <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-xs font-semibold mb-1" style="color:#627D98;">Origin / Pick-up Location / Shipper</label>
-                            <input type="text" id="destination_from" class="w-full border rounded p-1.5 text-sm focus:border-primary focus:outline-none" style="border-color:#D9E2EC; color:#243B53;" />
+                            <label class="block text-xs font-semibold mb-1" style="color:#627D98;">Origin / Pick-up Location / Shipper *</label>
+                            <input type="text" id="destination_from" required class="w-full border rounded p-1.5 text-sm focus:border-primary focus:outline-none" style="border-color:#D9E2EC; color:#243B53;" />
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold mb-1" style="color:#627D98;">Destination / Delivery Location / Consignee</label>
-                            <input type="text" id="destination_to" class="w-full border rounded p-1.5 text-sm focus:border-primary focus:outline-none" style="border-color:#D9E2EC; color:#243B53;" />
+                            <label class="block text-xs font-semibold mb-1" style="color:#627D98;">Destination / Delivery Location / Consignee *</label>
+                            <input type="text" id="destination_to" required class="w-full border rounded p-1.5 text-sm focus:border-primary focus:outline-none" style="border-color:#D9E2EC; color:#243B53;" />
                         </div>
                     </div>
                     <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -1641,13 +1935,13 @@
                                 <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Branch Name *</th>
                                 <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Head Number</th>
                                 <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Attach. Number</th>
-                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Driver Name</th>
                                 <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Badge Number *</th>
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Driver Name</th>
                                 <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Mobile Number</th>
                                 <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Dispatch Date</th>
                                 <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Departure Date</th>
-                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Customer Name</th>
                                 <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Customer Number *</th>
+                                <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Customer Name</th>
                                 <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Customer ETA</th>
                                 <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Loading Point</th>
                                 <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Offloading Point</th>
@@ -1662,30 +1956,32 @@
                                 <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Is Delay</th>
                                 <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Reason for Delay</th>
                                 <th class="p-2 border-b whitespace-nowrap" style="border-color:#D9E2EC;">Notes / Remarks</th>
+                                <th class="p-2 border-b whitespace-nowrap text-center" style="border-color:#D9E2EC;">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="multiple-orders-body">
                             <tr class="multiple-order-row">
                                 <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-order_number w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" placeholder="Required" /></td>
                                 <td class="p-2 border-b" style="border-color:#D9E2EC;">
-                                    <select class="mo-branch w-full border rounded p-1.5 text-sm bg-white" style="border-color:#D9E2EC; color:#243B53;">
+                                    <select class="mo-branch w-full border rounded p-1.5 text-sm bg-white" style="border-color:#D9E2EC; color:#243B53;" required>
+                                        <option value="">Select</option>
                                         <option value="Dammam">Dammam</option>
                                         <option value="Riyadh">Riyadh</option>
                                         <option value="Jeddah">Jeddah</option>
                                     </select>
                                 </td>
-                                <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-head_number w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
-                                <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-attachment_number w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
-                                <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-driver_name w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53; background:#F1F5F8;" disabled /></td>
+                                <td class="p-2 border-b" style="border-color:#D9E2EC; white-space:nowrap;"><div style="position:relative; display:inline-block; width:100%;"><input type="text" class="mo-head_number border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53; width:100%; padding-right:22px;" placeholder="Required" required /><button type="button" onclick="fleetTarget={type:'multiple',row:this.closest('tr'),field:'head'}; openFleetModal();" style="position:absolute; right:2px; top:50%; transform:translateY(-50%); width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; border-radius:3px; font-size:9px; background:#4F6D8A; color:#fff; border:none; cursor:pointer; padding:0;" title="Select head"><i class="fas fa-truck"></i></button></div></td>
+                                <td class="p-2 border-b" style="border-color:#D9E2EC; white-space:nowrap;"><div style="position:relative; display:inline-block; width:100%;"><input type="text" class="mo-attachment_number border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53; width:100%; padding-right:22px;" placeholder="Required" required /><button type="button" onclick="fleetTarget={type:'multiple',row:this.closest('tr'),field:'attachment'}; openFleetModal();" style="position:absolute; right:2px; top:50%; transform:translateY(-50%); width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; border-radius:3px; font-size:9px; background:#4F6D8A; color:#fff; border:none; cursor:pointer; padding:0;" title="Select attachment"><i class="fas fa-truck"></i></button></div></td>
                                 <td class="p-2 border-b" style="border-color:#D9E2EC; white-space:nowrap;"><div style="position:relative; display:inline-block; width:100%;"><input type="text" class="mo-badge_number border rounded p-1 text-sm" style="border-color:#D9E2EC; color:#243B53; width:100%; padding-right:22px;" placeholder="Required" /><button type="button" onclick="addressBookTarget={type:'multiple',row:this.closest('tr'),field:'driver'}; openAddressBookModal('driver', 'driver');" style="position:absolute; right:2px; top:50%; transform:translateY(-50%); width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; border-radius:3px; font-size:9px; background:#4F6D8A; color:#fff; border:none; cursor:pointer; padding:0;" title="Select driver"><i class="fas fa-address-book"></i></button></div></td>
+                                <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-driver_name w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53; background:#F1F5F8;" disabled /></td>
                                 <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-mobile w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
                                 <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="date" class="mo-actual_departure_date w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
                                 <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="time" class="mo-departure_time w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
-                                <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-customer_name w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53; background:#F1F5F8;" disabled /></td>
                                 <td class="p-2 border-b" style="border-color:#D9E2EC; white-space:nowrap;"><div style="position:relative; display:inline-block; width:100%;"><input type="text" class="mo-customer_number border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53; width:100%; padding-right:22px;" placeholder="Required" /><button type="button" onclick="addressBookTarget={type:'multiple',row:this.closest('tr'),field:'customer'}; openAddressBookModal('customer', 'customer');" style="position:absolute; right:2px; top:50%; transform:translateY(-50%); width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; border-radius:3px; font-size:9px; background:#4F6D8A; color:#fff; border:none; cursor:pointer; padding:0;" title="Select customer"><i class="fas fa-address-book"></i></button></div></td>
+                                <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-customer_name w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53; background:#F1F5F8;" disabled /></td>
                                 <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="date" class="mo-customer_eta w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
-                                <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-destination_from w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
-                                <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-destination_to w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
+                                <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-destination_from w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" placeholder="Required" required /></td>
+                                <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-destination_to w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" placeholder="Required" required /></td>
                                 <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-coordinates w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" placeholder="Lat, Lng" /></td>
                                 <td class="p-2 border-b" style="border-color:#D9E2EC;">
                                     <select class="mo-payload_type w-full border rounded p-1.5 text-sm bg-white" style="border-color:#D9E2EC; color:#243B53;">
@@ -1711,7 +2007,8 @@
                                 <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="date" class="mo-expected_offloading_date w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
                                 <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="time" class="mo-expected_offloading_time w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
                                 <td class="p-2 border-b" style="border-color:#D9E2EC;">
-                                    <select class="mo-initial_status w-full border rounded p-1.5 text-sm bg-white" style="border-color:#D9E2EC; color:#243B53;">
+                                    <select class="mo-initial_status w-full border rounded p-1.5 text-sm bg-white" style="border-color:#D9E2EC; color:#243B53;" required>
+                                        <option value="">Select</option>
                                         <option value="Pending">Pending</option>
                                         <option value="Dispatched">Dispatched</option>
                                         <option value="In Transit">In Transit</option>
@@ -1730,6 +2027,7 @@
                                 </td>
                                 <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-reason_for_delay w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
                                 <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-notes_remarks w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
+                                <td class="p-2 border-b text-center" style="border-color:#D9E2EC; width:60px;"><button type="button" onclick="deleteMultipleOrderRow(this)" class="text-red-600 hover:text-red-800 p-1" title="Delete row"><i class="fas fa-trash"></i></button></td>
                             </tr>
                         </tbody>
                     </table>
@@ -2054,6 +2352,14 @@
         let returnToMonitorAfterWorkOrder = false;
         let addressBookTarget = null;
         let addressBookLockedType = null;
+        let appLocked = false;
+        let lockPasswordHash = null;
+        let lockAutoTimeout = null;
+        let lockLastActivity = Date.now();
+        const LOCK_STORAGE_KEY = 'app_lock_hash';
+        const LOCK_TIMEOUT_KEY = 'app_lock_timeout';
+        const LOCK_ACTIVITY_KEY = 'app_lock_activity';
+        const DEFAULT_LOCK_TIMEOUT = 5 * 60 * 1000;
 
         // ─── UTILITY FUNCTIONS ───
         function getLocalDateString(date) {
@@ -2081,6 +2387,90 @@
 
         function isEROrderNumber(orderNumber) {
             return /^\d{8}$/.test(String(orderNumber || '').trim());
+        }
+
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password + 'vehicle_tracker_salt_2024');
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function lockApp(reason = 'manual') {
+            if (appLocked) return;
+            appLocked = true;
+            document.getElementById('lock-screen').classList.remove('hidden');
+            document.getElementById('lock-password').value = '';
+            document.getElementById('lock-error').classList.add('hidden');
+            if (reason === 'inactivity') {
+                logAudit('settings_changed', 'settings', '', '', 'Application locked due to inactivity');
+            }
+        }
+
+        async function unlockApp() {
+            const input = document.getElementById('lock-password');
+            const errorEl = document.getElementById('lock-error');
+            const entered = input.value;
+            if (!entered) {
+                errorEl.textContent = 'Please enter password.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+            const hash = await hashPassword(entered);
+            if (hash !== lockPasswordHash) {
+                errorEl.textContent = 'Incorrect password.';
+                errorEl.classList.remove('hidden');
+                input.value = '';
+                input.focus();
+                return;
+            }
+            appLocked = false;
+            document.getElementById('lock-screen').classList.add('hidden');
+            document.getElementById('lock-error').classList.add('hidden');
+            resetLockActivity();
+            updateLockButtonVisibility();
+            logAudit('settings_changed', 'settings', '', '', 'Application unlocked');
+        }
+
+        function resetLockActivity() {
+            lockLastActivity = Date.now();
+            if (lockAutoTimeout) clearTimeout(lockAutoTimeout);
+            if (lockPasswordHash && appLocked === false) {
+                const timeout = parseInt(localStorage.getItem(LOCK_TIMEOUT_KEY) || DEFAULT_LOCK_TIMEOUT);
+                lockAutoTimeout = setTimeout(() => {
+                    if (!appLocked && Date.now() - lockLastActivity >= timeout) {
+                        lockApp('inactivity');
+                    }
+                }, timeout);
+            }
+        }
+
+        async function setupLockScreen() {
+            const savedHash = localStorage.getItem(LOCK_STORAGE_KEY);
+            if (savedHash) {
+                lockPasswordHash = savedHash;
+                await lockApp('inactivity');
+            }
+            document.addEventListener('mousemove', resetLockActivity);
+            document.addEventListener('mousedown', resetLockActivity);
+            document.addEventListener('keydown', resetLockActivity);
+            document.addEventListener('touchstart', resetLockActivity);
+            document.addEventListener('scroll', resetLockActivity);
+        }
+
+        async function saveLockSettings(password, timeoutMinutes) {
+            if (password && password.trim()) {
+                lockPasswordHash = await hashPassword(password.trim());
+                localStorage.setItem(LOCK_STORAGE_KEY, lockPasswordHash);
+            }
+            if (timeoutMinutes && parseInt(timeoutMinutes) > 0) {
+                const ms = parseInt(timeoutMinutes) * 60 * 1000;
+                localStorage.setItem(LOCK_TIMEOUT_KEY, ms);
+            } else {
+                localStorage.removeItem(LOCK_TIMEOUT_KEY);
+            }
+            resetLockActivity();
         }
 
         function clearFieldErrors(container) {
@@ -2134,6 +2524,13 @@
             return result.some(r => r.name === trimmedName);
         }
 
+        function isFleetEntryValid(unitId) {
+            const trimmedId = String(unitId || '').trim();
+            if (!trimmedId) return true;
+            const result = execQuery('SELECT * FROM fleet WHERE id = ?', [trimmedId]);
+            return result.length > 0;
+        }
+
         function lookupAddressBookName(type, numberInputEl, nameInputEl) {
             const number = numberInputEl.value.trim();
             if (!number) {
@@ -2152,10 +2549,15 @@
             clearFieldErrors(document.getElementById('form-order'));
             const orderNumber = document.getElementById('order_number').value.trim();
             const branch = document.getElementById('branch').value;
+            const status = document.getElementById('order_initial_status').value;
             const driverName = document.getElementById('driver_name').value.trim();
             const badgeNumber = document.getElementById('badge_number').value.trim();
             const customerName = document.getElementById('customer_name').value.trim();
             const customerNumber = document.getElementById('customer_number').value.trim();
+            const headNumber = document.getElementById('head_number').value.trim();
+            const attachmentNumber = document.getElementById('attachment_number').value.trim();
+            const origin = document.getElementById('destination_from').value.trim();
+            const destination = document.getElementById('destination_to').value.trim();
             const departureDate = document.getElementById('actual_departure_date').value;
             const customerEta = document.getElementById('customer_eta').value;
             const offloadingDate = document.getElementById('expected_offloading_date').value;
@@ -2168,6 +2570,32 @@
             }
             if (!branch) {
                 showFieldError(document.getElementById('branch'), 'Branch is required.');
+                isValid = false;
+            }
+            if (!status) {
+                showFieldError(document.getElementById('order_initial_status'), 'Status is required.');
+                isValid = false;
+            }
+            if (!headNumber) {
+                showFieldError(document.getElementById('head_number'), 'Head number is required.');
+                isValid = false;
+            } else if (!isFleetEntryValid(headNumber)) {
+                showFieldError(document.getElementById('head_number'), 'Head number not found in fleet.');
+                isValid = false;
+            }
+            if (!attachmentNumber) {
+                showFieldError(document.getElementById('attachment_number'), 'Attachment number is required.');
+                isValid = false;
+            } else if (!isFleetEntryValid(attachmentNumber)) {
+                showFieldError(document.getElementById('attachment_number'), 'Attachment number not found in fleet.');
+                isValid = false;
+            }
+            if (!origin) {
+                showFieldError(document.getElementById('destination_from'), 'Origin / Pick-up Location / Shipper is required.');
+                isValid = false;
+            }
+            if (!destination) {
+                showFieldError(document.getElementById('destination_to'), 'Destination / Delivery Location / Consignee is required.');
                 isValid = false;
             }
             if (!badgeNumber) {
@@ -2200,10 +2628,16 @@
 
         function validateMultipleOrderRow(row) {
             const orderNumber = row.querySelector('.mo-order_number').value.trim();
+            const branch = row.querySelector('.mo-branch').value.trim();
+            const status = row.querySelector('.mo-initial_status').value.trim();
             const driverName = row.querySelector('.mo-driver_name').value.trim();
             const badgeNumber = row.querySelector('.mo-badge_number').value.trim();
             const customerName = row.querySelector('.mo-customer_name').value.trim();
             const customerNumber = row.querySelector('.mo-customer_number').value.trim();
+            const headNumber = row.querySelector('.mo-head_number').value.trim();
+            const attachmentNumber = row.querySelector('.mo-attachment_number').value.trim();
+            const origin = row.querySelector('.mo-destination_from').value.trim();
+            const destination = row.querySelector('.mo-destination_to').value.trim();
             const departureDate = row.querySelector('.mo-actual_departure_date').value;
             const customerEta = row.querySelector('.mo-customer_eta').value;
             const offloadingDate = row.querySelector('.mo-expected_offloading_date').value;
@@ -2212,6 +2646,36 @@
 
             if (!orderNumber) {
                 showFieldError(row.querySelector('.mo-order_number'), 'Order number is required.');
+                isValid = false;
+            }
+            if (!branch) {
+                showFieldError(row.querySelector('.mo-branch'), 'Branch is required.');
+                isValid = false;
+            }
+            if (!status) {
+                showFieldError(row.querySelector('.mo-initial_status'), 'Status is required.');
+                isValid = false;
+            }
+            if (!headNumber) {
+                showFieldError(row.querySelector('.mo-head_number'), 'Head number is required.');
+                isValid = false;
+            } else if (!isFleetEntryValid(headNumber)) {
+                showFieldError(row.querySelector('.mo-head_number'), 'Head number not found in fleet.');
+                isValid = false;
+            }
+            if (!attachmentNumber) {
+                showFieldError(row.querySelector('.mo-attachment_number'), 'Attachment number is required.');
+                isValid = false;
+            } else if (!isFleetEntryValid(attachmentNumber)) {
+                showFieldError(row.querySelector('.mo-attachment_number'), 'Attachment number not found in fleet.');
+                isValid = false;
+            }
+            if (!origin) {
+                showFieldError(row.querySelector('.mo-destination_from'), 'Origin / Pick-up Location / Shipper is required.');
+                isValid = false;
+            }
+            if (!destination) {
+                showFieldError(row.querySelector('.mo-destination_to'), 'Destination / Delivery Location / Consignee is required.');
                 isValid = false;
             }
             if (!badgeNumber) {
@@ -2408,6 +2872,13 @@
                 branch TEXT NOT NULL
             );
 
+            CREATE TABLE IF NOT EXISTS fleet (
+                id TEXT PRIMARY KEY,
+                type TEXT NOT NULL CHECK(type IN ('head','attachment')),
+                branch TEXT NOT NULL,
+                description TEXT NOT NULL
+            );
+
             DROP VIEW IF EXISTS latest_tracking;
             CREATE VIEW latest_tracking AS
             SELECT t1.* FROM tracking t1
@@ -2539,11 +3010,80 @@
             `INSERT INTO address_book (id, name, type, contact, branch) VALUES ('CUST-014', 'Hijaz Logistics', 'customer', '', 'Jeddah')`,
             `INSERT INTO address_book (id, name, type, contact, branch) VALUES ('CUST-015', 'Eastern Logistics', 'customer', '', 'Dammam')`,
             `INSERT INTO address_book (id, name, type, contact, branch) VALUES ('CUST-016', 'Desert Cargo', 'customer', '', 'Jeddah')`,
-            `INSERT INTO address_book (id, name, type, contact, branch) VALUES ('CUST-017', 'Central Transport', 'customer', '', 'Dammam')`,
-            `INSERT INTO address_book (id, name, type, contact, branch) VALUES ('CUST-018', 'Northern Freight', 'customer', '', 'Jeddah')`
-        ];
+             `INSERT INTO address_book (id, name, type, contact, branch) VALUES ('CUST-017', 'Central Transport', 'customer', '', 'Dammam')`,
+             `INSERT INTO address_book (id, name, type, contact, branch) VALUES ('CUST-018', 'Northern Freight', 'customer', '', 'Jeddah')`
+         ];
 
-        const SAMPLE_TRACKING = [
+         const SAMPLE_FLEET = [
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-1042', 'head', 'Riyadh', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-2087', 'head', 'Jeddah', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-3055', 'head', 'Dammam', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-4100', 'head', 'Riyadh', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-5120', 'head', 'Jeddah', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-6205', 'head', 'Dammam', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-7301', 'head', 'Riyadh', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-8410', 'head', 'Jeddah', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-9505', 'head', 'Dammam', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-1060', 'head', 'Riyadh', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-1175', 'head', 'Jeddah', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-1280', 'head', 'Dammam', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-1395', 'head', 'Riyadh', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-1410', 'head', 'Jeddah', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-1500', 'head', 'Dammam', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-2067', 'head', 'Dammam', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-2099', 'head', 'Jeddah', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-2118', 'head', 'Riyadh', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-2076', 'head', 'Dammam', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-2105', 'head', 'Jeddah', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-2064', 'head', 'Dammam', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-2131', 'head', 'Riyadh', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-2107', 'head', 'Riyadh', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-2115', 'head', 'Jeddah', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-2145', 'head', 'Dammam', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-2080', 'head', 'Jeddah', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-2101', 'head', 'Riyadh', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-2069', 'head', 'Riyadh', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-2122', 'head', 'Riyadh', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-2149', 'head', 'Riyadh', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('H-2077', 'head', 'Dammam', 'Tractor Head')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('TR-2089', 'attachment', 'Riyadh', 'Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('ET-3091', 'attachment', 'Jeddah', 'Extendable Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('CT-4012', 'attachment', 'Dammam', 'Curtain Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('TR-5001', 'attachment', 'Riyadh', 'Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('ET-6005', 'attachment', 'Jeddah', 'Extendable Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('CT-7002', 'attachment', 'Dammam', 'Curtain Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('TR-8008', 'attachment', 'Riyadh', 'Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('ET-9011', 'attachment', 'Jeddah', 'Extendable Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('CT-1015', 'attachment', 'Dammam', 'Curtain Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('TR-1102', 'attachment', 'Riyadh', 'Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('ET-1209', 'attachment', 'Jeddah', 'Extendable Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('CT-1303', 'attachment', 'Dammam', 'Curtain Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('TR-1407', 'attachment', 'Riyadh', 'Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('ET-1501', 'attachment', 'Jeddah', 'Extendable Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('CT-1600', 'attachment', 'Dammam', 'Curtain Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('B-1701', 'attachment', 'Riyadh', 'Bulker')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('B-1802', 'attachment', 'Jeddah', 'Bulker')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('B-1903', 'attachment', 'Dammam', 'Bulker')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('CT-3017', 'attachment', 'Dammam', 'Curtain Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('CT-3066', 'attachment', 'Jeddah', 'Curtain Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('TR-5088', 'attachment', 'Riyadh', 'Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('ET-4058', 'attachment', 'Dammam', 'Extendable Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('TR-5064', 'attachment', 'Jeddah', 'Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('CT-3053', 'attachment', 'Jeddah', 'Curtain Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('ET-4022', 'attachment', 'Dammam', 'Extendable Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('CT-3070', 'attachment', 'Riyadh', 'Curtain Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('ET-4049', 'attachment', 'Riyadh', 'Extendable Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('TR-5051', 'attachment', 'Jeddah', 'Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('TR-5037', 'attachment', 'Dammam', 'Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('TR-5050', 'attachment', 'Jeddah', 'Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('CT-3052', 'attachment', 'Jeddah', 'Curtain Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('ET-4073', 'attachment', 'Riyadh', 'Extendable Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('TR-5017', 'attachment', 'Riyadh', 'Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('ET-4003', 'attachment', 'Riyadh', 'Extendable Trailer')`,
+             `INSERT INTO fleet (id, type, branch, description) VALUES ('CT-3062', 'attachment', 'Dammam', 'Curtain Trailer')`
+         ];
+
+         const SAMPLE_TRACKING = [
             `INSERT INTO tracking (movement_id, tracking_date, location, coordinates, status, remarks) VALUES (1, '2026-09-01 07:30', 'Riyadh Central Terminal', '24.7136,46.6753', 'Pending', 'Order ready for dispatch')`,
             `INSERT INTO tracking (movement_id, tracking_date, location, coordinates, status, remarks) VALUES (1, '2026-09-01 07:45', 'Riyadh Industrial City', '24.7500,46.7200', 'Dispatched', 'Truck loaded, departed Riyadh')`,
             `INSERT INTO tracking (movement_id, tracking_date, location, coordinates, status, remarks) VALUES (1, '2026-09-01 10:15', 'Highway 40 - Kharj', '24.1500,47.3500', 'In Transit', 'En route to Dammam via Highway 40')`,
@@ -2760,6 +3300,8 @@
                     try { hiddenColumns = new Set(JSON.parse(savedHidden)); } catch (e) {}
                 }
 
+                await setupLockScreen();
+                updateLockButtonVisibility();
                 updateHeaderBranchDisplay();
                 applyActiveMonthToFilters(activeMonthSetting);
                 applyColumnNamesToDOM();
@@ -2804,6 +3346,7 @@
                 SAMPLE_ORDERS.forEach(q => db.run(q));
                 SAMPLE_TRACKING.forEach(q => db.run(q));
                 SAMPLE_ADDRESS_BOOK.forEach(q => db.run(q));
+                SAMPLE_FLEET.forEach(q => db.run(q));
             }
             await syncToIndexedDB();
             updateDbStatus(true, 'tracker.sqlite (Saved)');
@@ -2966,7 +3509,16 @@
 
         function deleteAddressBookEntry(id) {
             addressBookDeleteTargetId = id;
+            document.getElementById('confirm-delete-message').textContent = 'Delete this address book entry? This will not affect existing orders.';
             openModal('modal-confirm-delete');
+        }
+
+        function confirmDeleteEntry() {
+            if (addressBookDeleteTargetId) {
+                confirmDeleteAddressBookEntry();
+            } else if (fleetDeleteTargetId) {
+                confirmDeleteFleetEntry();
+            }
         }
 
         function confirmDeleteAddressBookEntry() {
@@ -3204,9 +3756,334 @@
             closeModal('modal-address-book');
         }
 
-        function filterAddressBookByType(type) {
-            document.getElementById('ab-filter-type').value = type;
-            renderAddressBookTable();
+        let fleetTarget = null;
+
+        function selectFromFleet(id) {
+            const row = execQuery('SELECT * FROM fleet WHERE id = ?', [id])[0];
+            if (!row) return;
+            if (!fleetTarget) {
+                fleetTarget = null;
+                closeModal('modal-fleet');
+                showToast('Unit selected. Open the order form and use the fleet button to populate.', 'success');
+                return;
+            }
+            const clearError = (el) => {
+                if (!el) return;
+                const wrapper = el.parentElement;
+                if (wrapper) {
+                    const existing = wrapper.querySelector('.field-error');
+                    if (existing) existing.remove();
+                }
+                el.style.borderColor = '';
+            };
+            if (fleetTarget.type === 'single') {
+                if (fleetTarget.field === 'head') {
+                    const headEl = document.getElementById('head_number');
+                    if (headEl) headEl.value = row.id;
+                    clearError(headEl);
+                } else if (fleetTarget.field === 'attachment') {
+                    const attachEl = document.getElementById('attachment_number');
+                    if (attachEl) attachEl.value = row.id;
+                    clearError(attachEl);
+                }
+            } else if (fleetTarget.type === 'multiple' && fleetTarget.row) {
+                const rowEl = fleetTarget.row;
+                if (fleetTarget.field === 'head') {
+                    const headEl = rowEl.querySelector('.mo-head_number');
+                    if (headEl) headEl.value = row.id;
+                    clearError(headEl);
+                } else if (fleetTarget.field === 'attachment') {
+                    const attachEl = rowEl.querySelector('.mo-attachment_number');
+                    if (attachEl) attachEl.value = row.id;
+                    clearError(attachEl);
+                }
+            }
+            fleetTarget = null;
+            closeModal('modal-fleet');
+        }
+
+        // ─── FLEET ───
+        function openFleetModal() {
+            document.getElementById('fleet-search').value = '';
+            const fleetTypeSelect = document.getElementById('fleet-filter-type');
+            if (fleetTarget && fleetTarget.field) {
+                fleetTypeSelect.value = fleetTarget.field;
+                fleetTypeSelect.disabled = true;
+            } else {
+                fleetTypeSelect.value = 'all';
+                fleetTypeSelect.disabled = false;
+            }
+            document.getElementById('fleet-filter-branch').value = '';
+            document.getElementById('fleet-entry-id').value = '';
+            document.getElementById('fleet-entry-unit-id').value = '';
+            document.getElementById('fleet-entry-type').value = 'head';
+            document.getElementById('fleet-entry-description').value = '';
+            document.getElementById('fleet-entry-branch').value = activeBranchSetting || 'Dammam';
+            renderFleetTable();
+            openModal('modal-fleet');
+        }
+
+        function renderFleetTable() {
+            const search = document.getElementById('fleet-search').value.trim().toLowerCase();
+            const typeFilter = document.getElementById('fleet-filter-type').value;
+            const branchFilter = document.getElementById('fleet-filter-branch').value;
+            let sql = 'SELECT * FROM fleet WHERE 1=1';
+            const params = [];
+            if (typeFilter !== 'all') {
+                sql += ' AND type = ?';
+                params.push(typeFilter);
+            }
+            if (branchFilter) {
+                sql += ' AND branch = ?';
+                params.push(branchFilter);
+            }
+            if (search) {
+                sql += ' AND (LOWER(id) LIKE ? OR LOWER(description) LIKE ?)';
+                params.push(`%${search}%`, `%${search}%`);
+            }
+            sql += ' ORDER BY type, id';
+            const rows = execQuery(sql, params);
+            const tbody = document.getElementById('fleet-body');
+            const selectionMode = !!fleetTarget;
+            tbody.innerHTML = rows.map(r => `
+                <tr class="border-b ${selectionMode ? 'cursor-pointer' : ''}" style="border-color:#D9E2EC;" ${selectionMode ? `ondblclick="selectFromFleet('${escapeHtml(r.id)}')"` : ''}>
+                    <td class="p-2 whitespace-nowrap" style="color:#243B53;">${escapeHtml(r.id)}</td>
+                    <td class="p-2 whitespace-nowrap"><span class="px-2 py-0.5 rounded text-xs font-semibold" style="background:${r.type==='head'?'#EDF3F7':'#EDF5F0'}; color:${r.type==='head'?'#4F6D8A':'#4F8060'};">${r.type==='head'?'Head':'Attachment'}</span></td>
+                    <td class="p-2 whitespace-nowrap" style="color:#243B53;">${escapeHtml(r.description)}</td>
+                    <td class="p-2 whitespace-nowrap" style="color:#627D98;">${escapeHtml(r.branch)}</td>
+                    <td class="p-2 whitespace-nowrap">
+                        ${selectionMode ? `<button type="button" onclick="selectFromFleet('${escapeHtml(r.id)}')" class="text-xs font-semibold mr-1" style="color:#4F8060;" title="Select"><i class="fas fa-check-circle"></i></button>` : ''}
+                        ${selectionMode ? '' : `<button type="button" onclick="editFleetEntry('${escapeHtml(r.id)}')" class="text-xs font-semibold mr-1" style="color:#B7791F;" title="Edit"><i class="fas fa-edit"></i></button><button type="button" onclick="deleteFleetEntry('${escapeHtml(r.id)}')" class="text-xs font-semibold" style="color:#B85450;" title="Delete"><i class="fas fa-trash"></i></button>`}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openFleetEntryModal(unitId = null) {
+            const titleEl = document.getElementById('fleet-entry-modal-title');
+            const idInput = document.getElementById('fleet-entry-id');
+            const unitIdInput = document.getElementById('fleet-entry-unit-id');
+            const typeSelect = document.getElementById('fleet-entry-type');
+            const descriptionInput = document.getElementById('fleet-entry-description');
+            const branchSelect = document.getElementById('fleet-entry-branch');
+
+            if (unitId) {
+                const row = execQuery('SELECT * FROM fleet WHERE id = ?', [unitId])[0];
+                if (!row) return;
+                titleEl.textContent = 'Edit Fleet Unit';
+                idInput.value = row.id;
+                unitIdInput.value = row.id;
+                unitIdInput.disabled = true;
+                typeSelect.value = row.type;
+                descriptionInput.value = row.description;
+                branchSelect.value = row.branch;
+            } else {
+                titleEl.textContent = 'Add Fleet Unit';
+                idInput.value = '';
+                unitIdInput.value = '';
+                unitIdInput.disabled = false;
+                typeSelect.value = 'head';
+                descriptionInput.value = '';
+                branchSelect.value = activeBranchSetting || 'Dammam';
+            }
+            openModal('modal-fleet-entry');
+        }
+
+        let pendingFleetEntry = null;
+
+        function saveFleetEntry() {
+            const unitId = document.getElementById('fleet-entry-unit-id').value.trim();
+            const type = document.getElementById('fleet-entry-type').value;
+            const description = document.getElementById('fleet-entry-description').value.trim();
+            const branch = document.getElementById('fleet-entry-branch').value;
+            if (!unitId || !description || !branch) {
+                showToast('Unit ID, Description, and Branch are required.', 'warning');
+                return;
+            }
+            const existing = execQuery('SELECT id, description FROM fleet WHERE id = ?', [unitId]);
+            pendingFleetEntry = { id: unitId, type, description, branch, existing: existing.length > 0 ? existing[0] : null };
+            const messageEl = document.getElementById('fleet-confirm-message');
+            if (existing.length > 0) {
+                messageEl.textContent = `Unit ID "${unitId}" already exists as ${existing[0].description}. Do you want to overwrite it?`;
+            } else {
+                messageEl.textContent = `Are you sure you want to add "${unitId}" to the fleet?`;
+            }
+            openModal('modal-confirm-fleet-entry');
+        }
+
+        function executeSaveFleetEntry() {
+            const entry = pendingFleetEntry;
+            pendingFleetEntry = null;
+            if (!entry) return;
+            try {
+                if (entry.existing) {
+                    db.run('UPDATE fleet SET type = ?, description = ?, branch = ? WHERE id = ?', [entry.type, entry.description, entry.branch, entry.id]);
+                    showToast('Fleet unit updated.', 'success');
+                } else {
+                    db.run('INSERT INTO fleet (id, type, branch, description) VALUES (?, ?, ?, ?)', [entry.id, entry.type, entry.branch, entry.description]);
+                    showToast('Fleet unit added.', 'success');
+                }
+                closeModal('modal-fleet-entry');
+                renderFleetTable();
+                syncToIndexedDB();
+            } catch (e) {
+                console.error(e);
+                showToast('Error saving fleet unit.', 'error');
+            }
+            closeModal('modal-confirm-fleet-entry');
+        }
+
+        function editFleetEntry(id) {
+            openFleetEntryModal(id);
+        }
+
+        let fleetDeleteTargetId = null;
+
+        function deleteFleetEntry(id) {
+            fleetDeleteTargetId = id;
+            document.getElementById('confirm-delete-message').textContent = 'Delete this fleet unit? This will not affect existing orders.';
+            openModal('modal-confirm-delete');
+        }
+
+        function confirmDeleteFleetEntry() {
+            const id = fleetDeleteTargetId;
+            fleetDeleteTargetId = null;
+            if (!id) return;
+            try {
+                db.run('DELETE FROM fleet WHERE id = ?', [id]);
+                renderFleetTable();
+                syncToIndexedDB();
+                showToast('Fleet unit deleted.', 'success');
+            } catch (e) {
+                console.error(e);
+                showToast('Error deleting fleet unit.', 'error');
+            }
+            closeModal('modal-confirm-delete');
+        }
+
+        function handleFleetCSVImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split(/\r?\n/).filter(line => line.trim());
+                if (lines.length < 2) {
+                    showToast('CSV file is empty or has no data rows.', 'warning');
+                    return;
+                }
+                const headers = parseCSVLine(lines[0]).map(h => h.trim().toLowerCase());
+                const unitIdIdx = headers.findIndex(h => h.includes('unit_id') || h.includes('id'));
+                const typeIdx = headers.findIndex(h => h.includes('type'));
+                const descriptionIdx = headers.findIndex(h => h.includes('description'));
+                const branchIdx = headers.findIndex(h => h.includes('branch'));
+
+                if (unitIdIdx === -1 || descriptionIdx === -1 || branchIdx === -1) {
+                    showToast('CSV must contain at least: unit_id, description, branch columns.', 'warning');
+                    return;
+                }
+
+                const previewRows = [];
+                const pendingData = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const cols = parseCSVLine(lines[i]);
+                    const unitId = (cols[unitIdIdx] || '').trim();
+                    const type = (cols[typeIdx] || '').trim().toLowerCase();
+                    const description = (cols[descriptionIdx] || '').trim();
+                    const branch = (cols[branchIdx] || '').trim();
+                    if (!unitId || !description || !branch) continue;
+                    const normalizedType = type === 'attachment' ? 'attachment' : 'head';
+                    const existing = execQuery('SELECT id, description FROM fleet WHERE id = ?', [unitId]);
+                    const status = existing.length > 0 ? 'Update' : 'New';
+                    previewRows.push({ id: unitId, type: normalizedType, description, branch, status });
+                    pendingData.push({ id: unitId, type: normalizedType, description, branch });
+                }
+
+                if (previewRows.length === 0) {
+                    showToast('No valid rows found in CSV.', 'warning');
+                    return;
+                }
+
+                document.getElementById('fleet-csv-pending-data').value = JSON.stringify(pendingData);
+                const tbody = document.getElementById('fleet-csv-preview-body');
+                tbody.innerHTML = previewRows.map(r => `
+                    <tr class="border-b" style="border-color:#D9E2EC;">
+                        <td class="p-2 whitespace-nowrap" style="color:#243B53;">${escapeHtml(r.id)}</td>
+                        <td class="p-2 whitespace-nowrap"><span class="px-2 py-0.5 rounded text-xs font-semibold" style="background:${r.type==='head'?'#EDF3F7':'#EDF5F0'}; color:${r.type==='head'?'#4F6D8A':'#4F8060'};">${r.type}</span></td>
+                        <td class="p-2 whitespace-nowrap" style="color:#243B53;">${escapeHtml(r.description)}</td>
+                        <td class="p-2 whitespace-nowrap" style="color:#627D98;">${escapeHtml(r.branch)}</td>
+                        <td class="p-2 whitespace-nowrap"><span class="px-2 py-0.5 rounded text-xs font-semibold" style="background:${r.status==='New'?'#EDF5F0':'#FFF3E0'}; color:${r.status==='New'?'#4F8060':'#B7791F'};">${r.status}</span></td>
+                    </tr>
+                `).join('');
+                const newCount = previewRows.filter(r => r.status === 'New').length;
+                const updateCount = previewRows.filter(r => r.status === 'Update').length;
+                document.getElementById('fleet-csv-summary').textContent = `${newCount} new entries, ${updateCount} entries to update.`;
+                openModal('modal-fleet-csv-preview');
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function confirmFleetCSVImport() {
+            const raw = document.getElementById('fleet-csv-pending-data').value;
+            if (!raw) return;
+            let rows;
+            try {
+                rows = JSON.parse(raw);
+            } catch (e) {
+                showToast('Invalid import data.', 'error');
+                return;
+            }
+            let added = 0;
+            let updated = 0;
+            try {
+                rows.forEach(r => {
+                    const existing = execQuery('SELECT id, description FROM fleet WHERE id = ?', [r.id]);
+                    if (existing.length > 0) {
+                        db.run('UPDATE fleet SET type = ?, description = ?, branch = ? WHERE id = ?', [r.type, r.description, r.branch, r.id]);
+                        updated++;
+                    } else {
+                        db.run('INSERT INTO fleet (id, type, branch, description) VALUES (?, ?, ?, ?)', [r.id, r.type, r.branch, r.description]);
+                        added++;
+                    }
+                });
+                syncToIndexedDB();
+                renderFleetTable();
+                showToast(`CSV import complete: ${added} new, ${updated} updated.`, 'success');
+            } catch (e) {
+                console.error(e);
+                showToast('Error importing CSV.', 'error');
+            }
+            closeModal('modal-fleet-csv-confirm');
+            closeModal('modal-fleet-csv-preview');
+        }
+
+        function exportFleetCSV() {
+            const rows = execQuery('SELECT id, type, description, branch FROM fleet ORDER BY type, id');
+            if (rows.length === 0) {
+                showToast('Fleet is empty.', 'warning');
+                return;
+            }
+            const headers = ['unit_id', 'type', 'description', 'branch'];
+            const csvContent = '\uFEFF' + headers.join(',') + '\n' + rows.map(r => {
+                const cols = [r.id, r.type, r.description, r.branch].map(field => {
+                    const str = String(field || '');
+                    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                        return '"' + str.replace(/"/g, '""') + '"';
+                    }
+                    return str;
+                });
+                return cols.join(',');
+            }).join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `fleet_${getLocalDateString()}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast(`Exported ${rows.length} fleet units to CSV.`, 'success');
+            logAudit('export', 'fleet', '', '', `Fleet exported: ${rows.length} entries`);
         }
 
         // ─── HEADER / DB STATUS ───
@@ -3336,17 +4213,6 @@
             actions: 28
         };
 
-        function getColumnToggleButton(key) {
-            const fixedKeys = new Set(['order_number', 'actions']);
-            if (fixedKeys.has(key)) {
-                return '';
-            }
-            const isHidden = hiddenColumns.has(key);
-            const icon = isHidden ? '<i class="fas fa-plus" style="font-size:9px;"></i>' : '<i class="fas fa-minus" style="font-size:9px;"></i>';
-            const title = isHidden ? 'Show column' : 'Hide column';
-            return `<button type="button" class="col-toggle-btn${isHidden ? ' force-visible' : ''}" onclick="event.stopPropagation(); toggleColumnVisibility('${key}', ${!isHidden});" title="${title}">${icon}</button>`;
-        }
-
         function toggleColumnVisibilityPanel() {
             const panel = document.getElementById('column-visibility-panel');
             panel.classList.toggle('hidden');
@@ -3401,13 +4267,29 @@
             applyToIndex(tds);
         }
 
+        // ─── ABOUT ───
+        function openAboutModal() {
+            openModal('modal-about');
+        }
+
         // ─── SETTINGS ───
         function openSettingsModal() {
+            const warningEl = document.getElementById('map-api-warning');
+            if (warningEl) {
+                warningEl.classList.add('hidden');
+                warningEl.classList.remove('flex');
+            }
             document.getElementById('setting-branch').value = activeBranchSetting || 'Dammam';
             document.getElementById('setting-active-month').value = activeMonthSetting || '';
             document.getElementById('setting-time-format').value = timeFormat || '24';
             document.getElementById('setting-carto-api-key').value = cartoApiKey || '';
             document.getElementById('setting-geoapify-api-key').value = geoapifyApiKey || '';
+            document.getElementById('setting-lock-password').value = '';
+            const savedTimeout = localStorage.getItem(LOCK_TIMEOUT_KEY);
+            const timeoutMinutes = savedTimeout ? parseInt(savedTimeout) / 60000 : 5;
+            const timeoutSelect = document.getElementById('setting-lock-timeout');
+            const closestMatch = Array.from(timeoutSelect.options).find(opt => parseInt(opt.value) === timeoutMinutes);
+            timeoutSelect.value = closestMatch ? closestMatch.value : '5';
             openModal('modal-settings');
         }
 
@@ -3417,6 +4299,8 @@
             const timeFormatVal = document.getElementById('setting-time-format').value;
             const cartoKeyVal = document.getElementById('setting-carto-api-key').value.trim();
             const geoapifyKeyVal = document.getElementById('setting-geoapify-api-key').value.trim();
+            const lockPasswordVal = document.getElementById('setting-lock-password').value;
+            const lockTimeoutVal = document.getElementById('setting-lock-timeout').value;
 
             activeBranchSetting = branchVal;
             localStorage.setItem('active_branch_setting', branchVal);
@@ -3446,6 +4330,9 @@
                 localStorage.removeItem('geoapify_api_key');
             }
 
+            saveLockSettings(lockPasswordVal, lockTimeoutVal);
+            updateLockButtonVisibility();
+
             applyColumnNamesToDOM();
             applyActiveMonthToFilters(monthVal);
             currentPage = 1;
@@ -3453,6 +4340,26 @@
             loadData();
             showToast("Settings updated successfully.", "success");
             logAudit('settings_changed', 'settings', '', '', `Branch: ${branchVal}, Month: ${monthVal}, TimeFormat: ${timeFormatVal}`);
+        }
+
+        function manualLockApp() {
+            if (!lockPasswordHash) {
+                showToast('Please set a lock password in Settings first.', 'warning');
+                openSettingsModal();
+                return;
+            }
+            lockApp('manual');
+        }
+
+        function updateLockButtonVisibility() {
+            const btn = document.getElementById('btn-lock-app');
+            if (btn) {
+                if (lockPasswordHash) {
+                    btn.classList.remove('hidden');
+                } else {
+                    btn.classList.add('hidden');
+                }
+            }
         }
 
         function applyActiveMonthToFilters(monthStr) {
@@ -3467,34 +4374,6 @@
             const lastDay = `${monthStr}-${String(lastDayObj.getDate()).padStart(2, '0')}`;
             document.getElementById('filter-date-from').value = firstDay;
             document.getElementById('filter-date-to').value = lastDay;
-        }
-
-        function applyActiveMonthToPrintFilters(monthStr) {
-            if (!monthStr) {
-                document.getElementById('print-date-from').value = '';
-                document.getElementById('print-date-to').value = '';
-                return;
-            }
-            const [year, month] = monthStr.split('-').map(Number);
-            const firstDay = `${monthStr}-01`;
-            const lastDayObj = new Date(year, month, 0);
-            const lastDay = `${monthStr}-${String(lastDayObj.getDate()).padStart(2, '0')}`;
-            document.getElementById('print-date-from').value = firstDay;
-            document.getElementById('print-date-to').value = lastDay;
-        }
-
-        function applyActiveMonthToMonitorFilters(monthStr) {
-            if (!monthStr) {
-                document.getElementById('monitor-date-from').value = '';
-                document.getElementById('monitor-date-to').value = '';
-                return;
-            }
-            const [year, month] = monthStr.split('-').map(Number);
-            const firstDay = `${monthStr}-01`;
-            const lastDayObj = new Date(year, month, 0);
-            const lastDay = `${monthStr}-${String(lastDayObj.getDate()).padStart(2, '0')}`;
-            document.getElementById('monitor-date-from').value = firstDay;
-            document.getElementById('monitor-date-to').value = lastDay;
         }
 
         // ─── MODAL HELPERS ───
@@ -3555,6 +4434,7 @@
         // ─── AUDIT LOG ───
         function logAudit(action, tableName, recordId, orderNumber, details) {
             try {
+                if (!db) return;
                 const userAgent = navigator.userAgent || '';
                 db.run(
                     `INSERT INTO audit_logs (action, table_name, record_id, order_number, details, user_agent, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`, [
@@ -3573,6 +4453,9 @@
         }
 
         function openAuditModal() {
+            closeModal('modal-settings');
+            document.getElementById('audit-search').value = '';
+            document.getElementById('audit-action-filter').value = '';
             openModal('modal-audit');
             renderAuditLogs();
         }
@@ -3679,7 +4562,10 @@
         // ─── DB IMPORT / EXPORT ───
         function openDbModal() { openModal('modal-db'); }
 
-        function openDataModal() { openModal('modal-data'); }
+        function openDataModal() {
+            document.getElementById('json-input').value = '';
+            openModal('modal-data');
+        }
 
         let pendingImportData = null;
 
@@ -5176,15 +6062,15 @@
                         <option value="Jeddah" ${defaultBranch === 'Jeddah' ? 'selected' : ''}>Jeddah</option>
                     </select>
                 </td>
-                <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-head_number w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
-                <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-attachment_number w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
-                <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-driver_name w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53; background:#F1F5F8;" disabled /></td>
+                <td class="p-2 border-b" style="border-color:#D9E2EC; white-space:nowrap;"><div style="position:relative; display:inline-block; width:100%;"><input type="text" class="mo-head_number border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53; width:100%; padding-right:22px;" placeholder="Head" /><button type="button" onclick="fleetTarget={type:'multiple',row:this.closest('tr'),field:'head'}; openFleetModal();" style="position:absolute; right:2px; top:50%; transform:translateY(-50%); width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; border-radius:3px; font-size:9px; background:#4F6D8A; color:#fff; border:none; cursor:pointer; padding:0;" title="Select head"><i class="fas fa-truck"></i></button></div></td>
+                <td class="p-2 border-b" style="border-color:#D9E2EC; white-space:nowrap;"><div style="position:relative; display:inline-block; width:100%;"><input type="text" class="mo-attachment_number border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53; width:100%; padding-right:22px;" placeholder="Attachment" /><button type="button" onclick="fleetTarget={type:'multiple',row:this.closest('tr'),field:'attachment'}; openFleetModal();" style="position:absolute; right:2px; top:50%; transform:translateY(-50%); width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; border-radius:3px; font-size:9px; background:#4F6D8A; color:#fff; border:none; cursor:pointer; padding:0;" title="Select attachment"><i class="fas fa-truck"></i></button></div></td>
                 <td class="p-2 border-b" style="border-color:#D9E2EC; white-space:nowrap;"><div style="position:relative; display:inline-block; width:100%;"><input type="text" class="mo-badge_number border rounded p-1 text-sm" style="border-color:#D9E2EC; color:#243B53; width:100%; padding-right:22px;" placeholder="Required" /><button type="button" onclick="addressBookTarget={type:'multiple',row:this.closest('tr'),field:'driver'}; openAddressBookModal('driver', 'driver');" style="position:absolute; right:2px; top:50%; transform:translateY(-50%); width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; border-radius:3px; font-size:9px; background:#4F6D8A; color:#fff; border:none; cursor:pointer; padding:0;" title="Select driver"><i class="fas fa-address-book"></i></button></div></td>
+                <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-driver_name w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53; background:#F1F5F8;" disabled /></td>
                 <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-mobile w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
                 <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="date" class="mo-actual_departure_date w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" value="${today}" /></td>
                 <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="time" class="mo-departure_time w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
-                <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-customer_name w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53; background:#F1F5F8;" disabled /></td>
                 <td class="p-2 border-b" style="border-color:#D9E2EC; white-space:nowrap;"><div style="position:relative; display:inline-block; width:100%;"><input type="text" class="mo-customer_number border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53; width:100%; padding-right:22px;" placeholder="Required" /><button type="button" onclick="addressBookTarget={type:'multiple',row:this.closest('tr'),field:'customer'}; openAddressBookModal('customer', 'customer');" style="position:absolute; right:2px; top:50%; transform:translateY(-50%); width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; border-radius:3px; font-size:9px; background:#4F6D8A; color:#fff; border:none; cursor:pointer; padding:0;" title="Select customer"><i class="fas fa-address-book"></i></button></div></td>
+                <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-customer_name w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53; background:#F1F5F8;" disabled /></td>
                 <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="date" class="mo-customer_eta w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
                 <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-destination_from w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
                 <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-destination_to w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
@@ -5232,6 +6118,7 @@
                 </td>
                 <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-reason_for_delay w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
                 <td class="p-2 border-b" style="border-color:#D9E2EC;"><input type="text" class="mo-notes_remarks w-full border rounded p-1.5 text-sm" style="border-color:#D9E2EC; color:#243B53;" /></td>
+                <td class="p-2 border-b text-center" style="border-color:#D9E2EC; width:60px;"><button type="button" onclick="deleteMultipleOrderRow(this)" class="text-red-600 hover:text-red-800 p-1" title="Delete row"><i class="fas fa-trash"></i></button></td>
             `;
             tbody.appendChild(tr);
             tr.querySelectorAll('input, select').forEach(attachClearErrorListener);
@@ -5245,6 +6132,18 @@
             if (moCustomerNumber && moCustomerName) {
                 moCustomerNumber.addEventListener('input', () => lookupAddressBookName('customer', moCustomerNumber, moCustomerName));
             }
+            autoSizeMultipleOrderColumns();
+        }
+
+        function deleteMultipleOrderRow(btn) {
+            const row = btn.closest('tr');
+            if (!row) return;
+            const tbody = document.getElementById('multiple-orders-body');
+            if (tbody.children.length <= 1) {
+                showToast('At least one row is required.', 'warning');
+                return;
+            }
+            row.remove();
             autoSizeMultipleOrderColumns();
         }
 
@@ -5517,10 +6416,6 @@
         function openTrackModal() {
             document.getElementById('track-order-input').value = '';
             openModal('modal-track-input');
-        }
-
-        function trackOrderByNumber(orderNum) {
-            processTrackOrder(orderNum);
         }
 
         function trackOrderById(movementId) {
@@ -5800,6 +6695,14 @@
                 leafletMap = null;
             }
             mapMarkers = [];
+            const mapEl = document.getElementById('map');
+            if (mapEl) {
+                mapEl.innerHTML = '';
+            }
+            const routeInfoEl = document.getElementById('map-route-info');
+            if (routeInfoEl) {
+                routeInfoEl.innerHTML = '';
+            }
         }
 
         function applyMapStyle(style) {
@@ -5807,17 +6710,27 @@
             mapStyle = style;
             localStorage.setItem('map_style', style);
 
+            const warningEl = document.getElementById('map-api-warning');
+            if (warningEl) {
+                warningEl.classList.add('hidden');
+                warningEl.classList.remove('flex');
+            }
+
             leafletMap.eachLayer(layer => {
                 if (layer instanceof L.TileLayer) {
                     leafletMap.removeLayer(layer);
                 }
             });
 
-            if (style === 'carto' && cartoApiKey) {
-                L.tileLayer(`https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=${cartoApiKey}`, {
+            if (style === 'carto') {
+                L.tileLayer(`https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png${cartoApiKey ? `?key=${cartoApiKey}` : ''}`, {
                     maxZoom: 20,
                     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
                 }).addTo(leafletMap);
+                if (!cartoApiKey && warningEl) {
+                    warningEl.classList.remove('hidden');
+                    warningEl.classList.add('flex');
+                }
             } else if (style === 'hybrid') {
                 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                     maxZoom: 20,
@@ -5838,6 +6751,19 @@
                     maxZoom: 19,
                     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | &copy; <a href="https://wikimediafoundation.org">Wikimedia Foundation</a>'
                 }).addTo(leafletMap);
+            }
+        }
+
+        function dismissMapWarning() {
+            const warningEl = document.getElementById('map-api-warning');
+            if (warningEl) {
+                warningEl.classList.add('hidden');
+                warningEl.classList.remove('flex');
+            }
+            const styleSelect = document.getElementById('map-style-select');
+            if (styleSelect) {
+                styleSelect.value = 'osm';
+                applyMapStyle('osm');
             }
         }
 
@@ -5933,29 +6859,32 @@
         }
 
         function openMonitorModal() {
-            openModal('modal-monitor');
+            document.getElementById('monitor-search').value = '';
             document.getElementById('monitor-filter-toggle').checked = false;
             document.getElementById('monitor-filter-value').value = '';
+            document.getElementById('monitor-date-from').value = '';
+            document.getElementById('monitor-date-to').value = '';
             updateMonitorFilterLabels();
-
-            if (activeMonthSetting) {
-                applyActiveMonthToMonitorFilters(activeMonthSetting);
-            } else {
-                document.getElementById('monitor-date-from').value = '';
-                document.getElementById('monitor-date-to').value = '';
-            }
 
             const counts = getMonitorFilteredCounts();
             document.getElementById('monitor-total-count').textContent = `(${counts.total} total)`;
             switchMonitorTab('inprogress');
             updateMonitorFilterLabels();
+            openModal('modal-monitor');
         }
 
         function restoreMonitorModal() {
-            openModal('modal-monitor');
+            document.getElementById('monitor-search').value = '';
+            document.getElementById('monitor-filter-toggle').checked = false;
+            document.getElementById('monitor-filter-value').value = '';
+            document.getElementById('monitor-date-from').value = '';
+            document.getElementById('monitor-date-to').value = '';
+            updateMonitorFilterLabels();
+
             const counts = getMonitorFilteredCounts();
             document.getElementById('monitor-total-count').textContent = `(${counts.total} total)`;
             renderMonitorContent(currentMonitorTab);
+            openModal('modal-monitor');
         }
 
         function switchMonitorTab(tab) {
@@ -6109,15 +7038,10 @@
 
         // ─── PRINT REPORT ───
         function openPrintModal() {
-            document.getElementById('print-filter-status').value = document.getElementById('filter-status').value;
-            document.getElementById('print-filter-delay').value = document.getElementById('filter-delay').value;
-
-            if (activeMonthSetting) {
-                applyActiveMonthToPrintFilters(activeMonthSetting);
-            } else {
-                document.getElementById('print-date-from').value = document.getElementById('filter-date-from').value;
-                document.getElementById('print-date-to').value = document.getElementById('filter-date-to').value;
-            }
+            document.getElementById('print-filter-status').value = '';
+            document.getElementById('print-filter-delay').value = '';
+            document.getElementById('print-date-from').value = '';
+            document.getElementById('print-date-to').value = '';
             openModal('modal-print');
         }
 
@@ -6343,12 +7267,11 @@
 
         function openChartsModal() {
             loadData();
+            document.getElementById('chart-date-from').value = '';
+            document.getElementById('chart-date-to').value = '';
+            chartDateFrom = '';
+            chartDateTo = '';
             openModal('modal-charts');
-            if (activeMonthSetting) {
-                applyActiveMonthToChartFilters(activeMonthSetting);
-            } else {
-                clearChartDateFilter();
-            }
             const { whereSql, params } = getChartFilteredQuery();
             const countRow = execQuery(`SELECT COUNT(*) as count FROM movements m ${whereSql}`, params)[0];
             document.getElementById('chart-total-count').textContent = `(${countRow.count || 0} total)`;
