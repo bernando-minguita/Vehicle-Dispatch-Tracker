@@ -188,6 +188,7 @@ Settings are saved to `localStorage` and persist across sessions.
 | `Alt + N` | Open new order modal |
 | `Alt + M` | Open monitor modal |
 | `Alt + F` | Focus search input |
+| `Ctrl + Click` header | Rename that column |
 | `Esc` | Close topmost modal |
 
 *Shortcuts are suppressed when typing in text fields.*
