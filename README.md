@@ -20,7 +20,21 @@ Track, manage, and optimize fleet dispatch operations from a single HTML file. A
 - **Full CRUD** — Create, read, update, and delete orders with automatic audit logging
 - **Duplicate Detection** — Warns on duplicate ERP-style order numbers
 - **Field Validation** — Required field checks and date logic (ETA must be ≥ dispatch date)
-- **City Autocomplete** — Saudi cities autocomplete for Destination From / Destination To fields
+- **Fleet Validation** — Head and attachment numbers validated against fleet registry
+- **Address Book Validation** — Driver badge and customer number validated against address book
+
+### 📒 Address Book
+- **Driver & Customer Registry** — Store and reuse driver and customer details
+- **CSV Import/Export** — Bulk manage entries via CSV
+- **Type Filtering** — Quick filter between drivers and customers
+- **Order Form Integration** — Select entries directly from order forms
+
+### 🚛 Fleet Management
+- **Fleet Registry** — Track tractor heads (H-) and attachments (ET-, CT-, B-)
+- **CRUD Operations** — Add, edit, delete fleet units with branch assignment
+- **CSV Import/Export** — Bulk manage fleet units via CSV
+- **Order Integration** — Select fleet units directly from order forms
+- **Validation** — Orders can only use registered fleet units
 
 ### 🗺️ Route Mapping
 - **Leaflet Integration** — Visualize order routes on an interactive map
@@ -38,18 +52,14 @@ Track, manage, and optimize fleet dispatch operations from a single HTML file. A
 - **Daily Dispatch Trend** — Line chart of orders over time
 - **Dispatch by Branch** — Horizontal bar chart
 - **Customer Performance** — Top 10 customers by order volume
-- **Overdue ETA Highlighting** — Red indicators for past-due ETAs
 
 ### 🖨️ Print & Export
 - **Print/PDF Reports** — Filtered, paginated reports in portrait/landscape
-- **PDF Export** — Direct PDF generation via html2pdf.js
 - **Excel Export** — Export filtered orders to `.xlsx`
 - **JSON/SQL Backup** — Full database export and restore
 
 ### ⚡ Productivity
 - **Keyboard Shortcuts** — `Alt+N` (new order), `Alt+M` (monitor), `Alt+F` (search), `Esc` (close modal)
-- **Filter Presets** — Save and reuse common filter combinations
-- **Undo Actions** — Undo last delete/update with 8-second toast window
 - **Column Customization** — Rename columns and toggle visibility
 - **Bulk Operations** — Multi-row entry with confirmation
 - **Auto-scroll Modals** — Modals open scrolled to top
@@ -77,7 +87,7 @@ Track, manage, and optimize fleet dispatch operations from a single HTML file. A
 | **Persistence** | IndexedDB (automatic sync) |
 | **Maps** | Leaflet + OSRM + Geoapify |
 | **Charts** | Chart.js v4 |
-| **Export** | ExcelJS, html2pdf.js |
+| **Export** | ExcelJS |
 
 ---
 
@@ -116,6 +126,13 @@ That's it. The app initializes with sample data on first load.
 - **Single Order**: Click **Add Order** or press `Alt+N`
 - **Multiple Orders**: Click the dropdown next to **Add Order** → **Add Multiple Orders**
 - Fill in required fields (marked with `*`). The app validates dates and required fields before saving.
+- Use the **Fleet** button next to Head/Attachment fields to select from registered fleet units.
+
+### Managing Fleet
+- Click **Fleet** in the header to open the fleet management modal
+- Add tractor heads (H-*) and attachments (ET-*, CT-*, B-*)
+- Import/export fleet data via CSV
+- Fleet units are validated when creating or updating orders
 
 ### Tracking Orders
 - Expand any order row to see tracking history
@@ -146,6 +163,8 @@ Access settings via the **Settings** button:
 - **Active Month** — Filter orders by month
 - **Time Format** — Toggle between 12h and 24h time display
 - **CARTO API Key** — Optional key for CartoDB Voyager map tiles
+- **Geoapify API Key** — Required for reverse geocoding and routing
+- **Password Lock** — Enable app lock with SHA-256 hashing and auto-lock timeout (1–30 minutes)
 
 Settings are saved to `localStorage` and persist across sessions.
 
@@ -181,7 +200,7 @@ Settings are saved to `localStorage` and persist across sessions.
 |-------|---------|
 | **SQLite (sql.js)** | In-memory database with full SQL support |
 | **IndexedDB** | Persistent backup of the SQLite binary |
-| **localStorage** | Settings, filter presets, map preferences |
+| **localStorage** | Settings, map preferences |
 
 > **Note**: Data is stored locally in your browser. Clearing browser data will reset the app. Use **Database → Export Backup** to preserve your data.
 
@@ -202,18 +221,6 @@ No automated tests are included. The app is manually tested on:
 - Chrome (latest)
 - Firefox (latest)
 - Edge (latest)
-
----
-
-## 📝 Roadmap
-
-Potential future enhancements:
-- [ ] Undo for import operations
-- [ ] Dark mode toggle
-- [ ] Scheduled/automated reports
-- [ ] Column width/order persistence
-- [ ] Offline map tile caching
-- [ ] Multi-user sync (optional backend)
 
 ---
 
